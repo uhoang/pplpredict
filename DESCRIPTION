@@ -1,0 +1,11 @@
+Package: pplpredict
+Title: Building a people prediction at electorate levels for VoteCompass datasets
+Version: 1.0
+Authors@R: person("Uyen", "Hoang", email = "uyen@voxpoplabs.com", role = c("aut", "cre"))
+Description: Functions to buil a people prediction at electorate levels using relative confidence measure
+Depends: R (>= 3.1.1)
+License: GPL-3
+LazyData: true
+Imports: plyr,
+    survey,
+    reshape2
