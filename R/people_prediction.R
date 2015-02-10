@@ -69,10 +69,10 @@ RCIMeasure <- function(x, partyNames = NULL){
 #' @examples 
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
 #' peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
-Data <- Queensland
-rci.vars <- paste0("party",1:4,"B")
-partyNames = c("Labor","Greens","LibNat","Katter")
-transform = TRUE
+# Data <- Queensland
+# rci.vars <- paste0("party",1:4,"B")
+# partyNames = c("Labor","Greens","LibNat","Katter")
+# transform = TRUE
 
 peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = TRUE, ...){
 

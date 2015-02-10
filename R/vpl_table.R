@@ -1,4 +1,3 @@
-#' import()
 vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, label.category = NULL, by.subset = NULL, 
             type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL){
   
