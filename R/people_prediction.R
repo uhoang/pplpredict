@@ -26,20 +26,39 @@ maxWrapper <- function(x){
   idx 
 }
 
-#' Calculate a relative confidence index between a winner and other candidates.
+# #' Calculate a relative confidence index between a winner and other candidates.
+# #'
+# #' @param x A matrix or data frame with n first columns are the winning ratings for n parties and the last column is the column index of a winner.
+# #' @param nLeaders A number of parties in the election race.
+# #' @return A matrix or data frame with n columns of relative confidence index for each party.
+# #' @examples 
+# #' RCIMeasure(cbind(matrix(1:9, 3,3), c(1,1,3)), 3)
+# #' RCIMeasure(data.frame(matrix(1:18, 6,3), c(1,1,2,2,2,1)), 3)
+# RCIMeasure <- function(x, nLeaders) {
+#   winnerIdx <- nLeaders + 1
+#   rci <- x[1:nLeaders] - x[x[winnerIdx]]
+#   rci[x[winnerIdx]] <- x[x[winnerIdx]] - sort(x[-x[winnerIdx]], decreasing = TRUE)[2]
+#   rci  
+# }
+
+#' Calcualte a relative confidence indexn between a winner and other candidates.
 #'
-#' @param x A matrix or data frame with n first columns are the winning ratings for n parties and the last column is the column index of a winner.
-#' @param nLeaders A number of parties in the election race.
-#' @return A matrix or data frame with n columns of relative confidence index for each party.
+#' @param x A numerical vector of the winning ratings for each party.
+#' @param partyNames A character vector of party names in the election race.
 #' @examples 
-#' RCIMeasure(cbind(matrix(1:9, 3,3), c(1,1,3)), 3)
-#' RCIMeasure(data.frame(matrix(1:18, 6,3), c(1,1,2,2,2,1)), 3)
-RCIMeasure <- function(x, nLeaders) {
-  winnerIdx <- nLeaders + 1
-  rci <- x[1:nLeaders] - x[x[winnerIdx]]
-  rci[x[winnerIdx]] <- x[x[winnerIdx]] - sort(x[-x[winnerIdx]], decreasing = TRUE)[2]
-  rci  
+#' RCIMeasure(c(1, 10, 3))
+#' RCIMeasure(c(1, 10, 3), c("Labor","Greens","LibNat"))
+RCIMeasure <- function(x, partyNames = NULL){
+  nLeaders <- length(x)
+  winnerIdx <- maxWrapper(x)
+  rci <- x[1:nLeaders] - x[winnerIdx]
+  rci[winnerIdx] <- x[winnerIdx] - sort(x, decreasing = TRUE)[2]
+  if(is.null(partyNames)) partyNames <- paste0("party",1:nLeaders)
+  names(rci) <- partyNames
+  list(rci = rci, rciWinner2ndRunner = as.numeric(rci[winnerIdx]), winner = partyNames[winnerIdx])
 }
+
+
 
 #' Calulate a people Prediction at electorate levels using relative confidence index 
 #' 
@@ -50,47 +69,34 @@ RCIMeasure <- function(x, nLeaders) {
 #' @examples 
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
 #' peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
+Data <- Queensland
+rci.vars <- paste0("party",1:4,"B")
+partyNames = c("Labor","Greens","LibNat","Katter")
+transform = TRUE
+
 peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = TRUE, ...){
 
     if(!is.data.frame(Data)) stop("Data has a wrong format. It must be a data.frame.")
     Rate <- Data[, rci.vars]
     
     if(transform) Rate <- data.frame(apply(Rate, 2, rescaleWrapper))
-    nLeaders <- ncol(Rate)
-    Rate$winnerIdx <- apply(Rate, 1, maxWrapper)
     
-    names(Rate)[1:nLeaders] <- paste0("rate", 1:nLeaders)
+    RCI <- apply(Rate, 1, function(x) RCIMeasure(x, partyNames))
+    RCI <- data.frame(do.call(rbind, lapply(RCI,unlist)), stringsAsFactors = FALSE)
     
-    RCI <- data.frame(t(apply(Rate[, 1:(nLeaders+1)] , 1, RCIMeasure, nLeaders = nLeaders)))
-    
-    names(RCI) <- paste0("rci", 1:nLeaders)
-    
-    Data <- data.frame(Data, RCI, winnerIdx = Rate$winnerIdx)
-    
-    Data$rciWinner2ndRunner <- NA
-    Data$rciWinner2ndRunner <- apply(Data[, c(paste0("rci", 1:nLeaders), "winnerIdx")], 1, 
-                        function(x) x[-length(x)][x[length(x)]])
+    RCI[, -ncol(RCI)] <- apply(RCI[, -ncol(RCI)], 2, as.numeric)
     
     if(!("weight" %in% names(Data))) Data$weight <- 1
     
-    rciWinner2ndRunner <- vplTable(Data$rciWinner2ndRunner, Data$electorate, Data$weight)
-    Predict <- data.frame(electorate = rciWinner2ndRunner$group1, rciWinner2ndRunner = rciWinner2ndRunner$value)
+    rciWinner2ndRunner <- vplTable(RCI$rciWinner2ndRunner, Data$electorate, Data$weight)
     
-    for(i in 1:nLeaders){
-      Predict[, paste0("rci", i)] <- vplTable(Data[, paste0("rci", i)], Data$electorate, Data$weight)$value 
-    }
+    rciParties <- grep("rci\\.", names(RCI), value = TRUE)
+    rciPredict <- vplTable(RCI[, rciParties], Data$electorate, Data$weight)
+    rciPredict <- reshape(rciPredict[, -ncol(rciPredict)], v.names = "value", timevar = "category1", idvar = "group1", direction = "wide")
+    rciPredict$winner <- partyNames[apply(rciPredict[, grep("value", names(rciPredict), value = TRUE)], 1, maxWrapper)]
+    rciPredict$secondPlace <- partyNames[apply(rciPredict[,grep("value", names(rciPredict), value = TRUE)], 1, function(x) which(x == sort(x, decreasing = TRUE)[2]))]
+    names(rciPredict)[1:(length(rciPredict)-2)] <- c("electorate", gsub("value\\.", "",rciParties))
     
-    Predict$winner <- paste0("rci", 1:nLeaders)[apply(Predict[, paste0("rci", 1:nLeaders)], 1, maxWrapper)]
-    Predict$secondPlace <- paste0("rci", 1:nLeaders)[apply(Predict[, paste0("rci", 1:nLeaders)], 1, function(x) which(x == sort(x, decreasing = TRUE)[2]))]
-    
-    
-    if(!is.null(partyNames)){
-      Predict$winner <- partyNames[1:nLeaders][as.numeric(gsub("rci","",Predict$winner))] 
-      Predict$secondPlace <- partyNames[1:nLeaders][as.numeric(gsub("rci","",Predict$secondPlace))] 
-    }
-    
-    pplPrediction <- Predict[, c("electorate","winner", "secondPlace", "rciWinner2ndRunner", paste0("rci",1:nLeaders))]
-    names(pplPrediction)[names(pplPrediction) %in% paste0("rci", 1:nLeaders)] <- paste0("rci",partyNames[1:nLeaders])
-    pplPrediction
+    rciPredict
 }
 
