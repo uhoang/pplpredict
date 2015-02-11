@@ -2,6 +2,8 @@
 % Please edit documentation in R/people_prediction.R
 \name{peoplePrediction}
 \alias{peoplePrediction}
+\alias{peoplepredict}
+\alias{pplpredict}
 \title{Calulate a people Prediction at electorate levels using relative confidence index}
 \usage{
 peoplePrediction(Data, rci.vars, partyNames = NULL, transform = TRUE, ...)
