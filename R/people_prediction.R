@@ -1,11 +1,15 @@
 #' Rescale vector elements.
 #'
-#' \code{rescaleWrapper} returns the vector of values rescale to 0-1 from 0-10 scale 
+#' \code{rescaleWrapper} returns the vector of rescaled values 
 #' @aliases resecaleWrapper rescale rescaled
 #' @param x A numeric number or vector.
-#' @return The rescaled number or vector of \code{x} 
+#' @param domain A vector includes minimum and maximum values of the domain of \code{x}.
+#' @param range A vector includes minimum and maximum values of the range of \code{x}.
+#' @param bounded A logical scalar. Default is FALSE. The output vector of scaled \code{x} can not less or greater than minimum or maximum value of the range of \code{x}.
+#' @param na.replace A numeric or character that missing values is replaced by. \code{na.replace} is missing at default. 
+#' @return The scaled values of \code{x} in the \code{range} for the given \code{domain}.
 #' @examples 
-#' rescaleWrapper(c(1, 2, 3), range = c(0,1))
+#' rescaleWrapper(c(1, 2, 3), range = c(0,1)) 
 #' rescaleWrapper(c(0, 1, NA), range = c(0,1))
 #' rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0,1), bounded = FALSE, na.replace = NA)
 #' rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0,1), bounded = TRUE, na.replace = NA)
@@ -74,7 +78,7 @@ RCIMeasure <- function(x, partyNames = NULL){
 #' @param Data A data frame of VoteCompass datasets 
 #' @param rci.vars A character vector or a numeric vector of index of variable names of the winning ratings for each party.
 #' @param partyNames A character vector of full names for each party.
-#' @param transfrom A logical value to indicate if RCI variables are needed to rescale. Its default is TRUE. 
+#' @param transfrom A logical scalar to indicate if RCI variables are needed to rescale. Its default is TRUE. 
 #' @examples 
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
 #' peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
@@ -87,8 +91,8 @@ peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = TRUE
       if(!"domain" %in% names(args)) domain = c(0,10)
       if(!"range" %in% names(args)) range = c(0,1)
       if(!"bounded" %in% names(args)) bounded = TRUE
-      if(!"na.repalce" %in% names(args)) na.replace = 0
-      Rate <- data.frame(apply(Rate, 2, rescaleWrapper, domain = domain, range = range, bounded = bounded, na.replace = bounded))
+      if(!"na.replace" %in% names(args)) na.replace = 0
+      Rate <- data.frame(apply(Rate, 2, rescaleWrapper, domain = domain, range = range, bounded = bounded, na.replace = na.replace))
     }
     RCI <- apply(Rate, 1, function(x) RCIMeasure(x, partyNames))
     RCI <- data.frame(do.call(rbind, lapply(RCI,unlist)), stringsAsFactors = FALSE)

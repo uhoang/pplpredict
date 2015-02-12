@@ -15,7 +15,7 @@ peoplePrediction(Data, rci.vars, partyNames = NULL, transform = TRUE, ...)
 
 \item{partyNames}{A character vector of full names for each party.}
 
-\item{transfrom}{A logical value to indicate if RCI variables are needed to rescale. Its default is TRUE.}
+\item{transfrom}{A logical scalar to indicate if RCI variables are needed to rescale. Its default is TRUE.}
 }
 \description{
 Calulate a people Prediction at electorate levels using relative confidence index
