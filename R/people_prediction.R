@@ -2,12 +2,12 @@
 #'
 #' \code{rescaleWrapper} returns the vector of rescaled values 
 #' @aliases resecaleWrapper rescale rescaled
-#' @param x A numeric number or vector.
-#' @param domain A vector includes minimum and maximum values of the domain of \code{x}.
-#' @param range A vector includes minimum and maximum values of the range of \code{x}.
-#' @param bounded A logical scalar. Default is FALSE. The output vector of scaled \code{x} can not less or greater than minimum or maximum value of the range of \code{x}.
-#' @param na.replace A numeric or character that missing values is replaced by. \code{na.replace} is missing at default. 
-#' @return The scaled values of \code{x} in the \code{range} for the given \code{domain}.
+#' @param x a numeric number or vector.
+#' @param domain a vector includes minimum and maximum values of the domain of \code{x}.
+#' @param range a vector includes minimum and maximum values of the range of \code{x}.
+#' @param bounded a logical scalar. Default is FALSE. The output vector of scaled \code{x} can not less or greater than minimum or maximum value of the range of \code{x}.
+#' @param na.replace a numeric or character that missing values is replaced by. \code{na.replace} is missing at default. 
+#' @return the scaled values of \code{x} in the \code{range} for the given \code{domain}.
 #' @examples 
 #' rescaleWrapper(c(1, 2, 3), range = c(0,1)) 
 #' rescaleWrapper(c(0, 1, NA), range = c(0,1))
@@ -42,8 +42,8 @@ rescaleWrapper <- function(x, domain = NULL, range = NULL, bounded = FALSE, na.r
 
 #' Find an index of a maximum value in a numeric vector.
 #' @aliases maxWrapper max maximum
-#' @param x A numeric vector 
-#' @return A index of a maximum value in \code{x}
+#' @param x a numeric vector 
+#' @return an index of a maximum value in \code{x}
 #' @examples
 #' maxWrapper(c(1, 3, 2))
 #' maxWrapper(c(0.1, 0.5, 0.7))
@@ -54,10 +54,11 @@ maxWrapper <- function(x){
 }
 
 
-#' Calcualte a relative confidence indexn between a winner and other candidates.
+#' Calcualte a relative confidence index between a winner and other candidates.
 #' @aliases RCIMeasure RCI rci 
-#' @param x A numerical vector of the winning ratings for each party.
-#' @param partyNames A character vector of party names in the election race.
+#' @param x a numerical vector of the winning ratings for each party.
+#' @param partyNames a character vector of party names in the election race.
+#' @return a vector of relative confidence indexes by each party. 
 #' @examples 
 #' RCIMeasure(c(1, 10, 3))
 #' RCIMeasure(c(1, 10, 3), c("Labor","Greens","LibNat"))
@@ -75,14 +76,17 @@ RCIMeasure <- function(x, partyNames = NULL){
 
 #' Calulate a people Prediction at electorate levels using relative confidence index 
 #' @aliases peoplePrediction pplpredict peoplepredict
-#' @param Data A data frame of VoteCompass datasets 
-#' @param rci.vars A character vector or a numeric vector of index of variable names of the winning ratings for each party.
-#' @param partyNames A character vector of full names for each party.
-#' @param transfrom A logical scalar to indicate if RCI variables are needed to rescale. Its default is TRUE. 
+#' @param Data a data frame of VoteCompass datasets 
+#' @param rci.vars a character vector or a numeric vector of index of variable names of the winning ratings for each party.
+#' @param partyNames a character vector of full names for each party.
+#' @param transfrom a logical scalar to indicate if RCI variables are needed to rescale. Its default is FALSE. 
+#' @param ... other arguments passed to \code{rescaleWrapper} when \code{transfrom} is set to TRUE
+#' @return a data frame of aggregated relative confidence index for each party by electorates/ridings, the winner and the secondplace runner by RCI. 
 #' @examples 
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
+#' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"), transform = TRUE)
 #' peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
-peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = TRUE, ...){
+peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = FALSE, ...){
 
     if(!is.data.frame(Data)) stop("Data has a wrong format. It must be a data.frame.")
     Rate <- Data[, rci.vars]

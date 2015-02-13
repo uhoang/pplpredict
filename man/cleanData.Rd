@@ -13,7 +13,10 @@ cleanData(Data, varsClean, matchFileName, ...)
 
 \item{varsClean}{a character vector of variables to be regrouped.}
 
-\item{matchFileName}{a character string naming a match file.}
+\item{matchFileName}{a character string naming a match file. The match file is an excel file with one or multiple sheets.
+Sheetname must be corresponding to variable names in \code{varsClean}.
+Each sheet must contain the original value of the variable in the 1st column, and their
+new values in those next columns. If the sheetname is \code{"varNames"}, rename the vairables of the dataset given in the sheet.}
 
 \item{...}{other arguments passed on to \code{read.xlsx} for reading the match file.}
 }
@@ -24,7 +27,21 @@ a data frame of regrouped variables.
 Rename categories of one or more variables in the dataset using an external match file
 }
 \examples{
-cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "QueenslandMatch.xlsx")
+data(QueenslandRaw)
+
+matchFileName <- system.file("extdata","QueenslandMatch.xlsx", package = "pplpredict")
+# View the first six lines of the sheet varNames in "QueenslandMatch.xlsx"
+head(xlsx::read.xlsx(matchFileName, sheetName = "varNames", stringsAsFactors = FALSE, header = FALSE))
+
+cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), matchFileName)
+cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), matchFileName)
+
+# Rename variables in a dataset
+cleanData(QueenslandRaw, "varNames", matchFileName)
+
+varsClean <- c("varNames","genderRaw","educationRaw","studentRaw","birthYearRaw","industryRaw",
+				"polInterestRaw","polConsumptionRaw","religionRaw","selfPlacementRaw","birthplaceRaw",
+				"incomeRaw","voteChoiceRaw","voteChoiceLeaningRaw")
+cleanData(QueenslandRaw, varsClean, "QueenslandMatch.xlsx")
 }
 

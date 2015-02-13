@@ -1,47 +1,647 @@
-nrow(W2)
-dim(W2)
-names(W2)
-t(questions)
-nrow(Weighted)
-library(pplpredict)
-data(Queensland)
-head(Queensland)
-?vplTable
-?peoplePrediction
-rm(list = ls())
-remove.packages("pplpredict")
-installed.packages()
-library(devtools)
-devtools::install_github("uyenhoang/pplpredict")
-data(Queensland)
-head(Queensland)
-peoplePrediction(Queensland, paste0("party", 1:4,"B"), c("Labor", "Greens","LibNat","Katter"))
-library(pplpredict)
-data(Queensland)
-head(Queensland)
-pplpredict(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
-peoplePrediction(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
-?peoplePredcition
-?peoplePrediction
-?maxWrapper
-??maxWrapper
-?pplpredict
-??pplpredict
-?RCIMeasure
-??RCIMeasure
-?maxWrapper
-??maxWrapper
-library(pplpredict)
-?maxWrapper
-?rescaleWrapper
-?peoplePrediction
+currentSet
+minL <- choiceRank[which(choiceRank %in% currentSet)[1]] #
+		maxL <- choiceRank[which(choiceRank %in% currentSet)[length(currentSet)]]
+minL
+maxL
+choiceRank
+X <- M[[4]]
+currentSet <- as.numeric(colnames(X)[subsets[4,] == 1])
+currentSet
+minL <- choiceRank[which(choiceRank %in% currentSet)[1]] #
+		maxL <- choiceRank[which(choiceRank %in% currentSet)[length(currentSet)]]
+currentSet
+minL
+maxL
+getAllPairs(currentSet, minMax[count,], X)
+minMax
+minMax[i, ]
+minMax[4, ]
+choiceRank[which(choiceRank %in% currentSet)[1]]
+choiceRank[which(choiceRank %in% currentSet)[length(currentSet)]]
+332-309
+?merge
+# Note that, if there are duplicate postal codes in the PC data, that you'll end up with respondent rows#
+# repeated. The following checks this and removes the duplicate.#
+# Assign ridings randomly for those that overlap?#
+if(any(duplicated(PC$postal_code))) PC <- PC[-which(duplicated(PC$postal_code)), ]#
+#
+# Merge M and Postal codes. Note that "id" is the district_id by another name.#
+C <- merge(C, with(PC, data.frame(postal_code, district_idPC)),#
+           by.x = "postalCode", by.y = "postal_code", all.x = TRUE, stringsAsFactors = FALSE)#
+C$district_id <- C$district_idPC#
+remove(PC)#
+#
+## MATCH RIDINGS AND MACRO DATA TO DISTRICT_ID#
+#
+MacroData1 <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/Ontario2014/Auxiliary/Ontario2014MacroData.xls", sheetIndex = 1, stringsAsFactors = FALSE)#
+MacroData1 <- MacroData1[, -which(names(MacroData1) == "district_idFR")]#
+MacroData2 <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/Ontario2014/Auxiliary/Ontario2014MacroData.xls", sheetIndex = 1, stringsAsFactors = FALSE)#
+MacroData2 <- MacroData2[, -which(names(MacroData2) == "district_id")]#
+names(MacroData2)[names(MacroData2) == "district_idFR"] <- "district_id"#
+#
+MacroData <- rbind(MacroData1, MacroData2)#
+MacroData$district_id <- as.numeric(MacroData$district_id)#
+MacroData$electors <- as.numeric(MacroData$electors)#
+MacroData$totalVotes <- as.numeric(MacroData$totalVotes)#
+MacroData$turnout <- as.numeric(MacroData$turnout)#
+MacroData$votesLib <- as.numeric(MacroData$votesLib)#
+MacroData$votesPc <- as.numeric(MacroData$votesPc)#
+MacroData$votesNdp <- as.numeric(MacroData$votesNdp)#
+MacroData$votesGreen <- as.numeric(MacroData$votesGreen)#
+MacroData$votesOther <- as.numeric(MacroData$votesOther)#
+MacroData$votesTotal <- as.numeric(MacroData$votesTotal)#
+MacroData$voteShareLib <- as.numeric(MacroData$voteShareLib)#
+MacroData$voteSharePc <- as.numeric(MacroData$voteSharePc)#
+MacroData$voteShareNdp <- as.numeric(MacroData$voteShareNdp)#
+MacroData$voteShareGreen <- as.numeric(MacroData$voteShareGreen)#
+MacroData$voteShareOther <- as.numeric(MacroData$voteShareOther)#
+#
+C <- merge(C, with(MacroData, data.frame(district_id, riding, region, stringsAsFactors = FALSE)), by = "district_id", all.x = TRUE, stringsAsFactors = FALSE)#
+remove(MacroData)#
+#
+GTA <- c("Ajax-Pickering",#
+         "Bramalea--Gore--Malton",#
+         "Brampton--Springdale",#
+         "Brampton--West",#
+         "Burlington",#
+         "Durham",#
+         "Halton",#
+         "Markham--Unionville",#
+         "Mississauga--Brampton South",#
+         "Mississauga East--Cooksville",#
+         "Mississauga--Erindale",#
+         "Mississauga South",#
+         "Mississauga--Streetsville",#
+         "Newmarket--Aurora",#
+         "Oak Ridges--Markham",#
+         "Oakville",#
+         "Oshawa",#
+         "Richmond Hill",#
+         "Thornhill",#
+         "Vaughan",#
+         "Whitby--Oshawa",#
+         "York--Simcoe"#
+         )#
+#
+Toronto <- c("Pickering--Scarborough East",#
+             "Scarborough--Rouge River",#
+             "Scarborough--Agincourt",#
+             "Scarborough--Guildwood",#
+             "Scarborough Centre",#
+             "Scarborough Southwest",#
+             "Beaches--East York",#
+             "Don Valley East",#
+             "Don Valley West",#
+             "Willowdale",#
+             "Toronto--Danforth",#
+             "Toronto Centre",#
+             "York Centre",#
+             "Eglinton--Lawrence",#
+             "St. Paul's",#
+             "Trinity--Spadina",#
+             "Davenport",#
+             "York--South Weston",#
+             "York West",#
+             "Etobicoke North",#
+             "Etobicoke Centre",#
+             "Etobicoke--Lakeshore",#
+             "Parkdale--High Park")#
+#
+W <- subset(W, W$riding %in% c(GTA, Toronto))#
+# REGION#
+#
+C$matchRegion1 <- NA#
+C$matchRegion1[C$riding %in% GTA] <- "GTA"#
+C$matchRegion1[C$riding %in% Toronto] <- "City of Toronto"#
+#
+W$matchRegion1 <- "GTA"#
+W$matchRegion1[W$riding %in% Toronto] <- "City of Toronto"#
+#
+unique(C$matchRegion1) %in% unique(W$matchRegion1)#
+unique(W$matchRegion1) %in% unique(C$matchRegion1)#
+# GENDER#
+#
+C$matchGender1 <- C$gender#
+#
+unique(C$matchGender1) %in% unique(W$matchGender1)#
+unique(W$matchGender1) %in% unique(C$matchGender1)#
+#
+# AGE GROUP#
+#
+C$age <- 2014 - C$birthYear#
+#
+C$matchAgeGroup1 <- as.character(NA)#
+C$matchAgeGroup1[C$age <= 29.5] <- "18-29"#
+C$matchAgeGroup1[C$age > 29.5 & C$age <= 39.5] <- "30-39"#
+C$matchAgeGroup1[C$age > 39.5 & C$age <= 49.5] <- "40-49"#
+C$matchAgeGroup1[C$age > 49.5 & C$age <= 64.5] <- "50-64"#
+C$matchAgeGroup1[C$age > 64.5] <- "65+"#
+#
+unique(C$matchAgeGroup1) %in% unique(W$matchAgeGroup1)#
+unique(W$matchAgeGroup1) %in% unique(C$matchAgeGroup1)#
+#
+# EDUCATION#
+#
+C$matchEducation1 <- NA#
+C$matchEducation1[C$educationOld %in% c("Below high school")] <- "High school or below"#
+C$matchEducation1[C$educationOld %in% c("High school")] <- "High school or below"#
+C$matchEducation1[C$educationOld %in% c("College")] <- "College"#
+C$matchEducation1[C$educationOld %in% c("Bachelor's degree")] <- "Bachelor's degree"#
+C$matchEducation1[C$educationOld %in% c("Graduate degree")] <- "Graduate degree"#
+#
+W$matchEducation1[W$matchEducation1 %in% c("Below high school")] <- "High school or below"#
+W$matchEducation1[W$matchEducation1 %in% c("High school")] <- "High school or below"#
+W$matchEducation1[W$matchEducation1 %in% c("College")] <- "College"#
+W$matchEducation1[W$matchEducation1 %in% c("Trade school")] <- "College"#
+W$matchEducation1[W$matchEducation1 %in% c("Bachelor's degree")] <- "Bachelor's degree"#
+W$matchEducation1[W$matchEducation1 %in% c("Graduate degree")] <- "Graduate degree"#
+#
+unique(C$matchEducation1) %in% unique(W$matchEducation1)#
+unique(W$matchEducation1) %in% unique(C$matchEducation1)#
+#
+# MOTHER TONGUE#
+#
+C$matchMotherTongue1 <- C$motherTongue#
+#
+C$matchMotherTongue1[C$matchMotherTongue1 == "French"] <- "Other language"#
+W$matchMotherTongue1[W$matchMotherTongue1 == "French"] <- "Other language"#
+#
+unique(C$matchMotherTongue1) %in% unique(W$matchMotherTongue1)#
+unique(W$matchMotherTongue1) %in% unique(C$matchMotherTongue1)#
+#
+# OCCUPATION#
+#
+C$matchOccupation1 <- as.character(NA)#
+C$matchOccupation1[C$occupationRaw %in% c("Management", "Business, finance and administration")] <- "Business and finance"#
+C$matchOccupation1[C$occupationRaw %in% c("Health", "Natural and applied sciences")] <- "Health and science"#
+C$matchOccupation1[C$occupationRaw %in% c("Art, culture, recreation and sport")] <- "Arts and culture"#
+C$matchOccupation1[C$occupationRaw %in% c("Education, law and social, community and government services")] <- "Education and government"#
+C$matchOccupation1[C$occupationRaw %in% c("Sales and service")] <- "Sales and service"#
+C$matchOccupation1[C$occupationRaw %in% c("Natural resources, agriculture and related production",#
+                                          "Trades, transport and equipment operators",#
+                                          "Manufacturing and utilities")] <- "Manufacturing and natural resources"#
+C$matchOccupation1[C$occupationRaw %in% c("Retired",#
+                                          "Currently searching for employment",#
+                                          "Currently not searching for employment",#
+                                          "Student (without other employment)",#
+                                          "Stay-at-home parent")] <- "Unemployed or retired"#
+#
+# W$matchOccupation1 <- as.character(NA)#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Management", "Business, finance, & administration")] <- "Business and finance"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Health", "Natural & applied sciences")] <- "Health and science"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Art, culture, recreation and sport")] <- "Arts and culture"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Education, research, government service, and religion")] <- "Education and government"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Sales and service")] <- "Sales and service"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Primary industries (agriculture, fisheries, forestry, mining, etc.)",#
+#                                              "Trades, transport, equipment operation",#
+#                                              "Processing, manufacturing and utilities")] <- "Manufacturing and natural resources"#
+# W$matchOccupation1[W$matchOccupation1 %in% c("Retired",#
+#                                              "Currently unemployed")] <- "Unemployed or retired"#
+#
+unique(C$matchOccupation1) %in% unique(W$matchOccupation1)#
+unique(W$matchOccupation1) %in% unique(C$matchOccupation1)#
+#
+# STUDENT#
+#
+C$matchStudent1 <- C$student#
+#
+unique(C$matchStudent1) %in% unique(W$matchStudent1)#
+unique(W$matchStudent1) %in% unique(C$matchStudent1)#
+#
+# RELIGION#
+#
+C$matchReligion1 <- C$religion#
+C$matchReligion1[C$matchReligion1 %in% c("No religion")] <- "No religion"#
+C$matchReligion1[C$matchReligion1 %in% c("Anglican",#
+                                         "Baptist",#
+                                         "Christian Reform",#
+                                         "Eastern Orthodox",#
+                                         "Lutheran",#
+                                         "Mennonite",#
+                                         "Mormon",#
+                                         "Other Christian",#
+                                         "Pentecostal",#
+                                         "Presbyterian",#
+                                         "Protestant",#
+                                         "Salvation Army",#
+                                         "United Church")] <- "Protestant"#
+C$matchReligion1[C$matchReligion1 %in% c("Catholic")] <- "Catholic"#
+C$matchReligion1[C$matchReligion1 %in% c("Buddhist",#
+                                         "Hindu",#
+                                         "Islam",#
+                                         "Jewish",#
+                                         "Other religion",#
+                                         "Sikh",#
+                                         "Traditional Aboriginal")] <- "Other religion"#
+#
+W$matchReligion1[W$matchReligion1 == "Muslim"] <- "Other religion"#
+#
+unique(C$matchReligion1) %in% unique(W$matchReligion1)#
+unique(W$matchReligion1) %in% unique(C$matchReligion1)#
+#
+# RELIGIOUS IMPORTANCE#
+#
+C$matchReligiousImportance2 <- C$religiousImportance#
+#
+C$matchReligiousImportance2[C$religiousImportance %in% c("Don't know")] <- "Not very important"#
+#
+# W$matchReligiousImportance2[W$matchReligiousImportance2 %in% c("Very important")] <- "Very important"#
+# W$matchReligiousImportance2[W$matchReligiousImportance2 %in% c("Somewhat important")] <- "Somewhat important"#
+# W$matchReligiousImportance2[W$matchReligiousImportance2 %in% c("Not very important")] <- "Not very important"#
+# W$matchReligiousImportance2[W$matchReligiousImportance2 %in% c("Not important at all")] <- "Not important at all"#
+#
+unique(C$matchReligiousImportance2) %in% unique(W$matchReligiousImportance2)#
+unique(W$matchReligiousImportance2) %in% unique(C$matchReligiousImportance2)#
+#
+# RELIGIOUS ATTENDANCE#
+#
+C$matchReligiousAttendance2 <- C$religiousAttendance#
+#
+C$matchReligiousAttendance2[C$religiousAttendance %in% c("At least once a week",#
+                                                         "At least once a day")] <- "Weekly"#
+C$matchReligiousAttendance2[C$religiousAttendance %in% c("At least once a month")] <- "Monthly"#
+C$matchReligiousAttendance2[C$religiousAttendance %in% c("Once or twice a year",#
+                                                         "At least 3 times a year",#
+                                                         "Don't know")] <- "Yearly"#
+C$matchReligiousAttendance2[C$religiousAttendance %in% c("Not at all")] <- "Not at all"#
+#
+W$matchReligiousAttendance2[W$matchReligiousAttendance2 %in% c("A few times a year")] <- "Yearly"#
+#
+unique(C$matchReligiousAttendance2) %in% unique(W$matchReligiousAttendance2)#
+unique(W$matchReligiousAttendance2) %in% unique(C$matchReligiousAttendance2)#
+#
+# UNION#
+#
+C$matchUnion1 <- as.character(NA)#
+C$matchUnion1[C$unionMember == "Union member"] <- "Union member"#
+C$matchUnion1[C$unionMember == "Not a union member"] <- "Not a union member"#
+#
+unique(C$matchUnion1) %in% unique(W$matchUnion1)#
+unique(W$matchUnion1) %in% unique(C$matchUnion1)#
+#
+# PETITION#
+#
+C$matchActivityPetition1 <- as.character(NA)#
+C$matchActivityPetition1[C$paperPetition == "Signed a paper petition" |#
+                         C$internetPetition == "Signed an Internet petition"] <- "Signed a petition"#
+C$matchActivityPetition1[C$paperPetition == "Did not sign a paper petition" &#
+                         C$internetPetition == "Did not sign an Internet petition"] <- "Did not sign a petition"#
+#
+unique(C$matchActivityPetition1) %in% unique(W$matchActivityPetition1)#
+unique(W$matchActivityPetition1) %in% unique(C$matchActivityPetition1)#
+#
+invisible(gc())#
+set.seed(1)#
+Imputed <- amelia(C[, c("matchRegion1",#
+                        "matchGender1",#
+                        "matchAgeGroup1",#
+                        "matchEducation1",#
+                        "matchMotherTongue1",#
+                        "matchOccupation1",#
+                        "matchStudent1",#
+                        "matchReligion1",#
+                        "matchReligiousImportance2",#
+                        "matchReligiousAttendance2",#
+                        "matchUnion1",#
+                        "matchActivityPetition1",#
+                        "uniqueID",#
+                        "coffee")],#
+                  empri = (0.05*nrow(ToImpute)),#
+                  m = 1,#
+                  incheck = TRUE,#
+                  p2s = 1,#
+                  idvars = c("uniqueID", "coffee"),#
+                  sqrts = c(),#
+                  logs = c(),#
+                  lgstc = c(),#
+                  noms = c("matchRegion1",#
+                           "matchGender1",#
+                           "matchAgeGroup1",#
+                           "matchEducation1",#
+                           "matchMotherTongue1",#
+                           "matchOccupation1",#
+                           "matchStudent1",#
+                           "matchReligion1",#
+                           "matchReligiousImportance2",#
+                           "matchReligiousAttendance2",#
+                           "matchUnion1",#
+                           "matchActivityPetition1"),#
+                  ords = c()#
+                  )#
+#
+C[, c("matchRegion1",#
+      "matchGender1",#
+      "matchAgeGroup1",#
+      "matchEducation1",#
+      "matchMotherTongue1",#
+      "matchOccupation1",#
+      "matchStudent1",#
+      "matchReligion1",#
+      "matchReligiousImportance2",#
+      "matchReligiousAttendance2",#
+      "matchUnion1",#
+      "matchActivityPetition1")] <- Imputed$imputations[[1]][, c("matchRegion1",#
+                                                                 "matchGender1",#
+                                                                 "matchAgeGroup1",#
+                                                                 "matchEducation1",#
+                                                                 "matchMotherTongue1",#
+                                                                 "matchOccupation1",#
+                                                                 "matchStudent1",#
+                                                                 "matchReligion1",#
+                                                                 "matchReligiousImportance2",#
+                                                                 "matchReligiousAttendance2",#
+                                                                 "matchUnion1",#
+                                                                 "matchActivityPetition1")]#
+Weighted <- weight(C,#
+                   W,#
+                   c("matchRegion1",#
+                     "matchGender1",#
+                     "matchAgeGroup1",#
+                     "matchEducation1",#
+                     # "matchStudent1",#
+                     # "matchMotherTongue1",#
+                     "matchOccupation1",#
+                     "matchReligion1",#
+                     "matchReligiousImportance2",#
+                     # "matchReligiousAttendance2",#
+                     "matchActivityPetition1"),#
+                   trim = TRUE)#
+#
+C <- Weighted#
+#
+C$overall <- "Toronto"#
+#
+C$participation <- C$volunteerParty + C$expressedViewsPolitician + C$expressedViewsWebsite + C$petitionPaper + C$petitionInternet + C$boycottProduct + C$publicMeeting + C$demonstrated + C$lawnSign#
+#
+C$importanceEnvironment <- abs(C$importanceEnvironment - 13)#
+C$importanceTaxes <- abs(C$importanceTaxes - 13)#
+C$importanceTransit <- abs(C$importanceTransit - 13)#
+C$importancePoverty <- abs(C$importancePoverty - 13)#
+C$importanceSafety <- abs(C$importanceSafety - 13)#
+C$importanceCivilLiberties <- abs(C$importanceCivilLiberties - 13)#
+C$importanceJobs <- abs(C$importanceJobs - 13)#
+C$importanceEconomy <- abs(C$importanceEconomy - 13)#
+C$importanceEducation <- abs(C$importanceEducation - 13)#
+C$importanceImmigration <- abs(C$importanceImmigration - 13)#
+C$importanceValues <- abs(C$importanceValues - 13)#
+C$importanceInequality <- abs(C$importanceInequality - 13)#
+flip <- function(X) return(abs(X - 7))#
+#
+library(psych)#
+##### DISTRIBUTION OF WEALTH#
+#
+C$Q2Std <- (C$Q2 - mean(C$Q2)) / sd(C$Q2)#
+C$Q3Std <- (C$Q3 - mean(C$Q3)) / sd(C$Q3)#
+C$Q4Std <- (C$Q4 - mean(C$Q4)) / sd(C$Q4)#
+distributionOfWealth <- c("Q2Std", "Q3Std", "Q4Std")#
+#
+C$distributionOfWealthFACTANAL <- as.numeric(as.numeric(factanal(C[, distributionOfWealth], scores = "Bartlett", factors = 1)$scores[, 1]))#
+dfact <- factanal(C[, distributionOfWealth], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$distributionOfWealth <- apply(C[, distributionOfWealth], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$distributionOfWealthFACTANAL, C$distributionOfWealth)#
+#
+# C$distributionOfWealth <- as.numeric(#
+#                                      (as.matrix(C[, distributionOfWealth]) %*% fa(C[, distributionOfWealth], nfactors = 1)$weights -#
+#                                      mean(as.matrix(C[, distributionOfWealth]) %*% fa(C[, distributionOfWealth], nfactors = 1)$weights)) /#
+#                                      sd(as.matrix(C[, distributionOfWealth]) %*% fa(C[, distributionOfWealth], nfactors = 1)$weights)#
+#                                     )#
+# cor(C$distributionOfWealthFACTANAL, C$distributionOfWealth)#
+#
+##### INDIVIDUALISM#
+C$Q1Std <- (C$Q1 - mean(C$Q1)) / sd(C$Q1)#
+C$Q64Std <- (C$Q64 - mean(C$Q64)) / sd(C$Q64)#
+C$Q65Std <- (C$Q65 - mean(C$Q65)) / sd(C$Q65)#
+individualism <- c("Q1Std", "Q64Std", "Q65Std")#
+#
+C$individualismFACTANAL <- as.numeric(scale(as.numeric(factanal(C[, individualism], scores = "Bartlett", factors = 1)$scores[, 1])))#
+dfact <- factanal(C[, individualism], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$individualism <- apply(C[, individualism], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$individualismFACTANAL, C$individualism)#
+#
+# C$individualism <- as.numeric(#
+#                              (as.matrix(C[, individualism]) %*% fa(C[, individualism], nfactors = 1)$weights -#
+#                              mean(as.matrix(C[, individualism]) %*% fa(C[, individualism], nfactors = 1)$weights)) /#
+#                              sd(as.matrix(C[, individualism]) %*% fa(C[, individualism], nfactors = 1)$weights)#
+#                             )#
+# #
+##### ENVIRONMENT#
+C$Q54Std <- (C$Q54 - mean(C$Q54)) / sd(C$Q54)#
+C$Q55Std <- (C$Q55 - mean(C$Q55)) / sd(C$Q55)#
+C$Q58Std <- (C$Q58 - mean(C$Q58)) / sd(C$Q58)#
+environment <- c("Q54Std", "Q55Std", "Q58Std")#
+#
+C$environmentFACTANAL <- as.numeric(factanal(C[, environment], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, environment], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$environment <- apply(C[, environment], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$environmentFACTANAL, C$environment)#
+#
+# C$environment <- as.numeric(#
+#                              (as.matrix(C[, environment]) %*% fa(C[, environment], nfactors = 1)$weights -#
+#                              mean(as.matrix(C[, environment]) %*% fa(C[, environment], nfactors = 1)$weights)) /#
+#                              sd(as.matrix(C[, environment]) %*% fa(C[, environment], nfactors = 1)$weights)#
+#                             )#
+# cor(C$environmentFACTANAL, C$environment)#
+##### MULTICULTURALISM#
+C$Q20Std <- (C$Q20 - mean(C$Q20)) / sd(C$Q20)#
+C$Q22Std <- (C$Q22 - mean(C$Q22)) / sd(C$Q22)#
+C$Q31Std <- (C$Q31 - mean(C$Q31)) / sd(C$Q31)#
+multiculturalism <- c("Q20Std", "Q22Std", "Q31Std")#
+#
+C$multiculturalismFACTANAL <- as.numeric(factanal(C[, multiculturalism], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, multiculturalism], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$multiculturalism <- apply(C[, multiculturalism], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$multiculturalismFACTANAL, C$multiculturalism)#
+#
+# C$multiculturalism <- as.numeric(#
+#                                  (as.matrix(C[, multiculturalism]) %*% fa(C[, multiculturalism], nfactors = 1)$weights -#
+#                                  mean(as.matrix(C[, multiculturalism]) %*% fa(C[, multiculturalism], nfactors = 1)$weights)) /#
+#                                  sd(as.matrix(C[, multiculturalism]) %*% fa(C[, multiculturalism], nfactors = 1)$weights)#
+#                                 )#
+# cor(C$multiculturalismFACTANAL, C$multiculturalism)#
+##### FEMINISM#
+C$Q8Std <- (C$Q8 - mean(C$Q8)) / sd(C$Q8)#
+C$Q11Std <- (C$Q11 - mean(C$Q11)) / sd(C$Q11)#
+C$Q15Std <- (C$Q15 - mean(C$Q15)) / sd(C$Q15)#
+feminism <- c("Q8Std", "Q11Std", "Q15Std")#
+#
+C$feminismFACTANAL <- as.numeric(factanal(C[, feminism], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, feminism], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$feminism <- apply(C[, feminism], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$feminismFACTANAL, C$feminism)#
+#
+# C$feminism <- as.numeric(#
+#                          (as.matrix(C[, feminism]) %*% fa(C[, feminism], nfactors = 1)$weights -#
+#                          mean(as.matrix(C[, feminism]) %*% fa(C[, feminism], nfactors = 1)$weights)) /#
+#                          sd(as.matrix(C[, feminism]) %*% fa(C[, feminism], nfactors = 1)$weights)#
+#                         )#
+# cor(C$feminismFACTANAL, C$feminism)#
+##### TRADITIONAL VALUES#
+C$Q28Std <- (C$Q28 - mean(C$Q28)) / sd(C$Q28)#
+C$Q39Std <- (C$Q39 - mean(C$Q39)) / sd(C$Q39)#
+C$Q40Std <- (C$Q40 - mean(C$Q40)) / sd(C$Q40)#
+traditionalValues <- c("Q28Std", "Q39Std", "Q40Std")#
+#
+C$traditionalValuesFACTANAL <- as.numeric(factanal(C[, traditionalValues], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, traditionalValues], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$traditionalValues <- apply(C[, traditionalValues], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$traditionalValuesFACTANAL, C$traditionalValues)#
+#
+# C$traditionalValues <- as.numeric(#
+#                          (as.matrix(C[, traditionalValues]) %*% fa(C[, traditionalValues], nfactors = 1)$weights -#
+#                          mean(as.matrix(C[, traditionalValues]) %*% fa(C[, traditionalValues], nfactors = 1)$weights)) /#
+#                          sd(as.matrix(C[, traditionalValues]) %*% fa(C[, traditionalValues], nfactors = 1)$weights)#
+#                         )#
+# cor(C$traditionalValuesFACTANAL, C$traditionalValues)#
+##### PATRIOTISM#
+C$Q51Std <- (C$Q51 - mean(C$Q51)) / sd(C$Q51)#
+C$Q52Std <- (C$Q52 - mean(C$Q52)) / sd(C$Q52)#
+C$Q53Std <- (C$Q53 - mean(C$Q53)) / sd(C$Q53)#
+patriotism <- c("Q51Std", "Q52Std", "Q53Std")#
+#
+C$patriotismFACTANAL <- as.numeric(factanal(C[, patriotism], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, patriotism], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$patriotism <- apply(C[, patriotism], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$patriotismFACTANAL, C$patriotism)#
+#
+# C$patriotism <- as.numeric(#
+#                            (as.matrix(C[, patriotism]) %*% fa(C[, patriotism], nfactors = 1)$weights -#
+#                            mean(as.matrix(C[, patriotism]) %*% fa(C[, patriotism], nfactors = 1)$weights)) /#
+#                            sd(as.matrix(C[, patriotism]) %*% fa(C[, patriotism], nfactors = 1)$weights)#
+#                           )#
+# cor(C$patriotismFACTANAL, C$patriotism)#
+##### RADICALISM#
+C$Q72Std <- (C$Q72 - mean(C$Q72)) / sd(C$Q72)#
+C$Q73Std <- (C$Q73 - mean(C$Q73)) / sd(C$Q73)#
+C$Q74Std <- (C$Q74 - mean(C$Q74)) / sd(C$Q74)#
+radicalism <- c("Q72Std", "Q73Std", "Q74Std")#
+#
+C$radicalismFACTANAL <- as.numeric(factanal(C[, radicalism], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, radicalism], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$radicalism <- apply(C[, radicalism], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$radicalismFACTANAL, C$radicalism)#
+# C$radicalism <- as.numeric(#
+#                            (as.matrix(C[, radicalism]) %*% fa(C[, radicalism], nfactors = 1)$weights -#
+#                            mean(as.matrix(C[, radicalism]) %*% fa(C[, radicalism], nfactors = 1)$weights)) /#
+#                            sd(as.matrix(C[, radicalism]) %*% fa(C[, radicalism], nfactors = 1)$weights)#
+#                           )#
+# cor(C$radicalismFACTANAL, C$radicalism)#
+##### ORGANIZED LABOUR#
+C$Q48Std <- (C$Q48 - mean(C$Q48)) / sd(C$Q48)#
+C$Q49Std <- (C$Q49 - mean(C$Q49)) / sd(C$Q49)#
+C$Q50Std <- (C$Q50 - mean(C$Q50)) / sd(C$Q50)#
+labour <- c("Q48Std", "Q49Std", "Q50Std")#
+#
+C$labourFACTANAL <- as.numeric(factanal(C[, labour], scores = "Bartlett", factors = 1)$scores[, 1])#
+dfact <- factanal(C[, labour], scores = "Bartlett", factors = 1)#
+loadings <- as.matrix(dfact$loadings[,1])#
+psi <- diag(dfact$uniquenesses^(-1))#
+C$labour <- apply(C[, labour], 2, function(X)(X - mean(X))/sd(X)) %*% t(as.matrix(solve(t(loadings) %*% psi %*% loadings)) %*% t(loadings) %*% psi)#
+#
+remove(dfact, loadings, psi)#
+cor(C$labourFACTANAL, C$labour)#
+#
+# C$labour <- as.numeric(#
+#                        (as.matrix(C[, labour]) %*% fa(C[, labour], nfactors = 1)$weights -#
+#                        mean(as.matrix(C[, labour]) %*% fa(C[, labour], nfactors = 1)$weights)) /#
+#                        sd(as.matrix(C[, labour]) %*% fa(C[, labour], nfactors = 1)$weights)#
+#                       )#
+# cor(C$labourFACTANAL, C$labour)#
+set.seed(1)#
+model <- Mclust(C[c("distributionOfWealth",#
+                      "individualism",#
+                      "environment",#
+                      "multiculturalism",#
+                      "feminism",#
+                      "traditionalValues",#
+                      "patriotism",#
+                      "radicalism",#
+                      "labour"#
+                      # "importanceEnvironment",#
+                      # "importanceTaxes",#
+                      # "importanceTransit",#
+                      # "importancePoverty",#
+                      # "importanceSafety",#
+                      # "importanceCivilLiberties",#
+                      # "importanceJobs",#
+                      # "importanceEconomy",#
+                      # "importanceEducation",#
+                      # "importanceImmigration",#
+                      # "importanceValues",#
+                      # "importanceInequality"#
+                      )], G = 8, modelNames = "EEI")#
+summary(model)#
+predict(model, C[C$uniqueID == "Uyen", c("distributionOfWealth",#
+                      "individualism",#
+                      "environment",#
+                      "multiculturalism",#
+                      "feminism",#
+                      "traditionalValues",#
+                      "patriotism",#
+                      "radicalism",#
+                      "labour")])#
+C$cluster <- toupper(letters[(model$classification)])#
+table(C$cluster)#
+#
+C$cluster[C$uniqueID == "Uyen"]#
+C$cluster[C$uniqueID == "Greg"]#
+C$cluster[C$uniqueID == "Ashique"]#
+C$cluster[C$uniqueID == "Cliff"]#
+C$cluster[C$uniqueID == "James"]#
+C$cluster[C$uniqueID == "Yannick"]#
+C$cluster[C$uniqueID == "Nico"]#
+C$cluster[C$uniqueID == "Sarah"]#
+C$cluster[C$uniqueID == "Sasha"]#
+#
+tableMeans(C, "cluster", "selfPlacement")#
+#
+table(C$coffee)
+library(lme4)#
+library(arm)#
+library(data.table)#
+library(xlsx)#
+#
+PanelCanada <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/Panel-Canada.csv", stringsAsFactors = FALSE, fileEncoding = "UTF-8"); invisible(gc())#
+#
+OntarioPanel <- subset(PanelCanada, province == "Ontario")#
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
 library(survey)#
 library(ggplot2)#
 library(gridExtra) # for unit()#
 library(reshape) # for melt()#
 library(plyr)#
-library(parallel)#
-# library(multicore)#
+library(multicore)#
 options(java.parameters = "-Xmx16g") # Set the java heap size to 16gb (RAM). Load before xlsx library.#
 library(xlsx)#
 library(Zelig)#
@@ -140,17 +740,6 @@ makeTitle <- function(title, titleLines = 2, maxTitle = 58){#
 #
 ########## WEIGHT FUNCTION#
 #
-# Data <- Complete#
-# WeightData <- W#
-# variables <- c("voteChoice2013Labor",#
-#                "weightGender",#
-#                "weightAgeGroup",#
-#                "weightEducation",#
-#                "weightIndustry",#
-#                "weightReligion",#
-#                "weightVolunteer")#
-# trim <- FALSE#
-#
 weight <- function(Data, WeightData, variables, trim = TRUE){#
     require(ebal)#
     require(plyr)#
@@ -195,22 +784,11 @@ weight <- function(Data, WeightData, variables, trim = TRUE){#
 #
     treatment <- as.matrix(Merged$treatment); invisible(gc())#
 #
-    binaries <- names(Merged)[which(unlist(lapply(Merged, class)) %in% c("character", "factor"))]#
-    continuous <- names(Merged)[which(unlist(lapply(Merged, class)) %in% c("numeric", "integer"))]#
-    continuous <- continuous[-which(continuous == "treatment")]#
-#
     X <- matrix(nrow = nrow(Merged), ncol = 0)#
-#
-    # BINARIES#
-    if(length(binaries) > 0){#
-      for(i in 1:length(binaries)){#
-          X <- cbind(X, makeBinary(Merged[, binaries[i]], removeLast = TRUE))#
-      }#
+    for(i in 1:length(variables)){#
+        X <- cbind(X, makeBinary(Merged[, i], removeLast = TRUE))#
     }#
     invisible(gc())#
-    # CONTINUOUS#
-    if(length(continuous) > 0) X <- cbind(X, Merged[, continuous])#
-#
     eb.out <- ebalance(Treatment = treatment, X = X)#
     invisible(gc())#
     if(trim == TRUE) eb.out <- ebalance.trim(eb.out)#
@@ -370,13 +948,14 @@ makeNumeric <- function(X, varNames){#
 ########## CLEAN CATEGORICAL VARIABLES#
 ###########
 #
-# varName <- M$industryRaw#
-# category <- "industry"#
+# varName <- M$incomeRaw#
+# category <- "incomeRaw"#
 #
 # varName <- M$voteChoicePartyLeaningRaw#
 # category <- "voteChoicePartyLeaningRaw"#
-# election <- "Queensland2015"#
+# election <- "NewZealand2014"#
 # directory <- cleanDir#
+#
 cleanCatVar <- function(varName, category, election = "Canada", directory) {#
   ## This function is designed to clean raw categorical variables with values from a pre-existing, election-specific #
   ## master list of categories.#
@@ -461,11 +1040,7 @@ vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, 
     }#
     if( !is.null(label.x) ) names(label.x) <- c("variable", "variableRename")#
   }#
-  if( !is.null(label.x) ) { #
-    if( nrow(label.x) == 1 ) DF$variable <- label.x$variable#
-    if( any(!DF$variable %in% label.x$variable)) stop("One of the variables in the data does not match the variables in label.x list.")#
-    DF <- merge(DF, label.x, by = "variable", all = FALSE)#
-  }#
+  if( !is.null(label.x) ) DF <- merge(DF, label.x, by = "variable", all = FALSE)#
   if( !is.null(label.by) ) DF <- merge(DF, label.by, by = "group1", all = FALSE)#
   if(!is.null(label.category)) { #
     names(DF)[names(DF) == "category1"] <- "category1Old"#
@@ -494,997 +1069,1623 @@ vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, 
   DF <- DF[, sort(names(DF))]#
 #
   return(DF)#
+}
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+rm(list = ls())
+library(survey)#
+library(ggplot2)#
+library(gridExtra) # for unit()#
+library(reshape) # for melt()#
+library(plyr)#
+library(multicore)#
+options(java.parameters = "-Xmx16g") # Set the java heap size to 16gb (RAM). Load before xlsx library.#
+library(xlsx)#
+library(Zelig)#
+library(Amelia)#
+library(chron)#
+library(blme) # MRP#
+library(lme4) # MRP#
+library(arm) # MRP#
+library(extrafont) # Update fonts with font_import()#
+library(data.table)#
+##### BASIC THEME#
+#
+my.theme <- function(base_size = 11, base_family = "",#
+                     grid.x_colour = NA, grid.y_colour = NA,#
+                     grid.x_linetype = 1, grid.y_linetype = 1,#
+                     strip_colour = "grey15", strip_text = "black",#
+                     background_colour = "transparent",#
+                     tick_colour = "black",#
+                     borderless = 0, bordersize = 0.5){ #
+  if(is.na(grid.x_colour)) grid.x_colour <- "transparent"#
+  if(is.na(grid.y_colour)) grid.y_colour <- "transparent"#
+  if(borderless == 2){#
+    border <- theme(#axis.line = element_line(colour = "black", size = 0.25`),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+#
+  else if(borderless == 1){#
+    border <- theme(axis.line = element_line(colour = "black", size = 0.25),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+  else if(borderless == 0) border <- theme()#
+    theme( #
+      axis.text.x       = element_text(family = base_family, colour = "grey15", size = base_size, vjust = 1, lineheight = 0.9),#
+      axis.text.y       = element_text(family = base_family, colour = "grey15", size = base_size, hjust = 1, lineheight = 0.9),#
+      axis.ticks        = element_line(colour = tick_colour, size = 0.2),#
+      axis.ticks.length = unit(0.25, "lines"),#
+      axis.ticks.margin = unit(0.15, "cm"),#
+      axis.title.x      = element_text(family = base_family, size = base_size, colour = "black", vjust = -0.5),#
+      axis.title.y      = element_text(family = base_family, size = base_size, angle = 90, colour = "black", vjust = 0.25),#
+      legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),#
+      legend.key = element_blank(), #element_rect(colour = "transparent", fill = "transparent") #
+      legend.key.size = unit(0.6, "lines"),#
+      legend.text = element_text(family = base_family, size = base_size, face = "italic", lineheight = 1),#
+      legend.text.align = 0, #
+      legend.title = element_text(family = base_family, size = base_size, face = "plain", hjust = 0),#
+      legend.title.align = 0,#
+      legend.position = "top",#
+      legend.direction = "horizontal",#
+      legend.justification = c(1, 1),#
+      panel.background = element_rect(fill = "transparent", colour = "black", size = 0.25),#
+      panel.border = element_rect(fill = "transparent", colour = "black", size = bordersize),#
+      panel.grid.major.x = element_line(colour = grid.x_colour, size = 0.15, linetype = grid.x_linetype),#
+      panel.grid.major.y = element_line(colour = grid.y_colour, size = 0.15, linetype = grid.y_linetype),#
+      panel.grid.minor = element_blank(),#
+      panel.margin = unit(0.75, "lines"),#
+      strip.background = element_rect(fill = strip_colour, colour = "black", size = 0), # STRIP BACKGROUND#
+      strip.text.x = element_text(family = base_family, size = base_size, face = "plain", colour = strip_text),#
+      strip.text.y = element_text(family = base_family, size = base_size, face = "plain", angle = -90, colour = strip_text),#
+      plot.background = element_rect(fill = background_colour, colour = background_colour),#
+      plot.title = element_text(family = base_family, size = base_size * 1.1, vjust = 0, face = "bold")#
+    ) +#
+    border#
 }#
 #
-##### DOT PLOT#
+# Auto-break a graph title#
 #
-vplDotPlot <- function(x, y, by, y.label = NULL, by.order = NULL, breaks = NULL, #
-                      breaks.label = NULL, x.range = NA, colour = NULL, fontsize = 11, scale = 3, legend.col = NA, #
-                      legend.position = "top", title = "", sortCateType = c("none", "order", "value")){#
-  Data <- data.frame(value = x, category1 = y, group1 = by)#
+# title <- "Hello"#
+# title <- "When providers gave me instructions, they always asked me whether you would have any problems doing what you needed to do to take care of your illness or health condition."#
+# maxTitle <- 58#
+# numLines <- 5#
+#
+makeTitle <- function(title, titleLines = 2, maxTitle = 58){#
+    n <- ceiling(nchar(title) / maxTitle)#
+    if(nchar(title) / maxTitle > titleLines){#
+       warningMessage <- paste0("The number of lines in your title is too few for the number of characters. Setting titleLines to ", ceiling(nchar(title) / maxTitle), ".")#
+       warning(warningMessage)#
+       titleLines <- ceiling(nchar(title) / maxTitle)#
+    }#
+    if(n == 1) return(paste0(c(rep("\n", titleLines - 1), title), collapse = ""))#
+#
+    newTitle <- ""#
+    for(i in 1:(n-1)){#
+        cutNear <- nchar(title)/(n+1-i)#
+        cutAt <- unlist(gregexpr(" ", title))[which(abs(cutNear - unlist(gregexpr(" ", title))) == min(abs(cutNear - unlist(gregexpr(" ", title)))))] - 1#
+        newTitle[i] <- substr(title, 1, cutAt)#
+        title <- substr(title, cutAt+2, nchar(title))#
+    }#
+    newTitle <- paste(c(newTitle, title), collapse = "\n")#
+#
+    return(paste0(c(rep("\n", titleLines - n), newTitle), collapse = ""))#
+}#
+#
+########## WEIGHT FUNCTION#
+#
+weight <- function(Data, WeightData, variables, trim = TRUE){#
+    require(ebal)#
+    require(plyr)#
+#
+    if(!all(variables %in% names(Data))){#
+        stopMessage <- paste0("Dataset does not contain the following variables:\n ", variables[which(!variables %in% names(Data))])#
+        stop(stopMessage)#
+    }#
+#
+    if(!all(variables %in% names(WeightData))){#
+        stopMessage <- paste0("Weighting dataset does not contain the following variables:\n ", variables[which(!variables %in% names(WeightData))])#
+        stop(stopMessage)#
+    }#
+#
+    makeBinary <- function(x, removeLast = TRUE){#
+        categories <- unique(na.omit(x))#
+        D <- matrix(ncol = length(categories), nrow = length(x))#
+#
+        for(i in 1:length(categories)){#
+          D[, i] <- as.integer(x == categories[i])#
+        }#
+        invisible(gc())#
+#
+        if(removeLast == FALSE) return(D)#
+        else if(removeLast == TRUE) return(D[, -ncol(D)])#
+    }#
+#
+    Data$treatment <- 0#
+    WeightData$treatment <- 1#
+#
+    missingRows <- which(apply(Data[, which(names(Data) %in% c("treatment", variables))], 1, function(X) any(is.na(X))))#
+    if(length(missingRows > 0)) warning("Missing data in dataset.")#
+#
+    # Dataset which has missing data and cannot be weighted#
+    MissingData <- data.frame()#
+    if(length(missingRows) > 0){#
+      MissingData <- Data[missingRows, ]#
+      Data <- Data[-missingRows, ]#
+    }#
+    Merged <- rbind.fill(Data[, which(names(Data) %in% c("treatment", variables))],#
+                         WeightData[, which(names(WeightData) %in% c("treatment", variables))])#
+#
+    treatment <- as.matrix(Merged$treatment); invisible(gc())#
+#
+    X <- matrix(nrow = nrow(Merged), ncol = 0)#
+    for(i in 1:length(variables)){#
+        X <- cbind(X, makeBinary(Merged[, i], removeLast = TRUE))#
+    }#
+    invisible(gc())#
+    eb.out <- ebalance(Treatment = treatment, X = X)#
+    invisible(gc())#
+    if(trim == TRUE) eb.out <- ebalance.trim(eb.out)#
+#
+    Data$weight <- eb.out$w#
+#
+    if(nrow(MissingData) > 0) Data <- rbind.fill(Data, MissingData)#
+    Data <- Data[, -which(names(Data) == "treatment")]#
+    row.names(Data) <- 1:nrow(Data)#
+    return(Data)#
+#
+}#
+#
+###########
+########## BAR GRAPH (GENERIC)#
+###########
+# Data <- RegionBroadUndecided#
+# yMax = NULL;#
+# colour = RegionBroadColours;#
+# fontsize = 11;#
+# decimal = 0;#
+# scale = 3;#
+# ncol = NA;#
+# sortCategories = FALSE;#
+# title = "";#
+# fill.horiz = "group1"#
+barGraph <- function(Data, yMax = NULL, colour = NULL, fontsize = 11, decimal = 0, scale = 3, ncol = NA, sortCateType = "none", title = "", legend.position = "top", xlabels = NULL){#
+  if(is.null(yMax)){#
+    yMax <- max(Data$value)#
+    yMax <- yMax + (0.16 * yMax)# Add 15% of the max to the y-axis height to leave room for number on top of bar#
+  }#
   if(is.null(colour)) colour <- c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4", "grey40")#
-  if(!is.null(names(colour))) names(colour) <- paste0(" ", names(colour), "  ") #
+#
+  if(!is.factor(Data$group1)) Data$group1 <- factor(Data$group1, levels = unique(Data$group1))#
   levels(Data$group1) <- paste0(" ", levels(Data$group1), "  ")#
-  if(is.na(legend.col)) legend.col <- length(levels(Data$group1))#
+  if(!is.null(names(colour))) names(colour) <- paste0(" ", names(colour), "  ")#
+  if(is.na(ncol)) ncol <- length(unique(Data$group1))#
+  if(ncol > length(unique(Data$group1))) ncol <- length(unique(Data$group1))#
 #
-  if(is.null(breaks)) { #
-    xlabels <- scale_x_continuous()#
-  }else{#
-    if( is.null(breaks.label)) {#
-      xlabels <- scale_x_continuous(breaks = breaks)#
-    }else{#
-      xlabels <- scale_x_continuous(breaks = breaks, labels = breaks.label)#
-    }#
-  }#
-#
-  if(is.vector(y.label)){#
-    if(length(y.label) != length(unique(as.character(y)))){#
-      stop("The length of y.label does not match the number of categories")#
-    }#
-    if(length(names(y.label)) > 0 ){#
-      y.label <- data.frame(oldCategory1 = names(y.label), category1 = y.label)#
-    }else{#
-      y.label <- data.frame(oldCategory1 = unique(as.character(Data$category1)), category1 = y.label)#
-    }#
-  }#
-#
-  if(is.data.frame(y.label)) names(y.label) <- c("oldCategory1", "category1")#
-  if(!is.null(y.label)) Data <- merge(y.label, Data, by.x = "oldCategory1", by.y = "category1")  #
-  sortCateType <- sortCateType[1]#
   # Sort category1 by a name of each category#
   if(sortCateType == "order") Data <- Data[with(Data, order(category1)),]#
   # Sort category1 descendingly by an overall mean value of each category#
-  else if(sortCateType == "value") Data$category1 <- reorder(Data$category1, Data$value, mean) #
-  if(is.na(x.range)){#
-    xMax <- max(Data$value) + 0.05*diff(range(Data$value))#
-    xMin <- min(Data$value) - 0.05*diff(range(Data$value))#
-  }else{#
-    xMax <- range[2]#
-    xMin <- range[1]#
-  }#
-  if(!is.null(breaks)) {#
-    xMax <- max(breaks[length(breaks)], xMax)#
-    xMin <- min(breaks[1], xMin)#
+  else if(sortCateType == "value") Data$category1 <- reorder(Data$category1, -Data$value, mean) #Data <- Data[with(Data, order())]#
+#
+  # Formatting the text of value labels for each bar graph by the number of decimal inputted#
+  Data$valueLabel <- sprintf(paste0("%.", decimal, "f"), round(Data$value, decimal))#
+  # xlabels is unspecified#
+  if(is.null(xlabels)){#
+    xbreaks <- unique(as.character(Data$category1))#
+    xlabels <- unique(as.character(Data$category1))#
+  # xlabels is specified as a vector#
+  }else if(is.vector(xlabels)){#
+    if(is.null(names(xlabels))) xbreaks <- unique(as.character(Data$category1))#
+    else xbreaks <- names(xlabels)#
+  # xlabels is specified as a data frame with the 1st column - an origional name of category1, #
+  # the 2nd column - an new name of category1#
+  }else if(is.data.frame(xlabels)){#
+    xbreaks <- as.character(xlabels[,1])#
+    xlabels <- as.character(xlabels[,2])#
   }#
 #
-  print(ggplot(Data, aes(x = value, y = category1, fill = group1, colour = group1)) +#
+  print(ggplot(Data, aes(x = category1, y = value, label = valueLabel, fill = group1, colour = group1)) +#
           my.theme(base_size = fontsize, borderless = 2,#
-                   grid.x_colour = "grey80", grid.y_colour = "grey80",#
-                   grid.x_linetype = 1,      grid.y_linetype = 1,#
-                   background_colour = "#EDf4F7", tick_colour = "grey80") +#
-          coord_cartesian(x = c(xMin, xMax))+#
-          xlabels + #
-          labs(x = "", y = "", colour = "", fill = "") +#
-          geom_point(pch = 21, size = 3.5, fill = "transparent", alpha = 1) +#
-          geom_point(pch = 21, size = 3.5, alpha = 0.7)  +#
+                   background_colour = "transparent", tick_colour = "#A0A4A2") +#
+          coord_cartesian(y = c(0, yMax)) +#
+          scale_y_continuous(breaks = c()) +#
+          scale_x_discrete(breaks = xbreaks, labels = xlabels) +#
+          labs(x = "", y = "", title = title, colour = "", fill = "") +#
+          geom_bar(stat = "identity", fill = "transparent", position = position_dodge(width = 0.85), width = 0.6, size = 0.7, alpha = 1) +#
+          geom_bar(stat = "identity", position = position_dodge(width = 0.87), width = 0.6, size = 0.7, alpha = 0.88) +#
+          geom_text(colour = "grey15", stat = "identity", position = position_dodge(width = 0.85), size = (fontsize/scale), vjust = -0.85) +#
+          geom_hline(yintercept = 0, colour = "#A0A4A2", size = 0.5) +#
           scale_fill_manual(values = colour) +#
           scale_colour_manual(values = colour) +#
-          theme(legend.position = "top",#
-                legend.key.size = unit(0.8, "lines"),#
-                legend.text = element_text(size = fontsize, face = "italic"),#
-                legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),#
-                axis.ticks.length = unit(0, "lines"),#
-                plot.margin = unit(c(0, 3, 0, 0), "lines")) +#
-          guides(fill = guide_legend(ncol = legend.col, byrow = TRUE)) )#
-}
-library(chron)#
+          theme(plot.margin = unit(c(0, 0.5, -0.5, -1), "lines"),#
+                legend.position = legend.position) +#
+          guides(fill = guide_legend(ncol = ncol, byrow = TRUE,#
+                 override.aes = list(colour = "transparent")#
+                 ))#
+       )#
 #
-workingDirectory <- "~/Dropbox (Vox Pop Labs)/Data/VoteCompass/Queensland2015"#
-setwd(paste0(workingDirectory, "/RawData"))#
-#
-dataList <- sort(grep("report", list.files(), ignore.case = FALSE, value = TRUE), decreasing = TRUE)#
-# dataList <- dataList[!dataList %in% c("")]#
-#
-## ELECTION DAY INFORMATION#
-#
-startDay <- 20150113#
-electionDay <- 20150131#
-#
-## LOAD DATA#
-#
-n <- length(dataList)#
-M <- data.frame()#
-for(i in 1:n){#
-  cat(c(length(dataList) - i + 1, sort(dataList)[i], "\n"))#
-  M <- rbind.fill(M, read.csv(sort(dataList)[i], stringsAsFactor = FALSE, fileEncoding = "UTF-8", na.strings = c("NA", "", "Please select", "Please Select"), allowEscapes = TRUE, flush = TRUE))#
 }#
-M <- M[!duplicated(M) & M$dateStamp != "2015-01-11", ] #
+###########
+########## CREATE GRAPH OF DAILY RESPONDENTS#
+###########
 #
-# if(length(which(duplicated(M$session_id))) > 0) M <- M[-which(duplicated(M$session_id)), ]#
+dailyRespondents <- function(Data, language = "English", electionDay){#
+  if(!"date" %in% names(Data)) stop("date does not exist")#
+  title <- "Number of Users per Day"#
+  electionName <- "Election"#
+  if(language == "French"){#
+    Sys.setlocale(locale="fr_CA.UTF-8")#
+    title <- "Nombre d'utilisateurs"#
+    electionName <- "élections"#
+  }#
 #
-setwd(workingDirectory)#
+  require(scales)#
+  G <- data.frame(table(Data$date), stringsAsFactors = FALSE)#
+  names(G)[1] <- "date"#
+  names(G)[2] <- "sampleSize"#
+  G$date <- as.Date(as.character(G$date), format = "%Y%m%d")#
+  missingDates <- seq(min(G$date), max(G$date), by = "days")[which(!seq(min(G$date), max(G$date), by = "days") %in% G$date)]#
+  missingDates <- seq(min(G$date), as.Date(as.character(electionDay), "%Y%m%d"), by = "days")#
+  missingDates <- missingDates[!missingDates %in% G$date]#
 #
-nrow(M)#
+  if(length(missingDates) != 0){#
+    G[nrow(G):nrow(G)+length(missingDates), ] <- NA#
+    G$date[(nrow(G)-length(missingDates)+1):nrow(G)] <- missingDates#
+  }#
 #
-# COUNTRY#
-M$country <- "Australia"#
+  G$sampleSize[is.na(G$sampleSize)] <- 0#
 #
-# STATE#
-M$state <- "Queensland"#
-## LANGUAGE OF USE#
+  G$date <- factor(as.factor(G$date), levels = as.factor(seq(min(G$date, na.rm = TRUE), max(G$date, na.rm = TRUE), by = "days")))#
+  dateNames <- format(as.Date(levels(G$date)), format="%b %d")#
+  dateNames[dateNames == format(as.Date(as.character(electionDay), format = "%Y%m%d"), format="%b %d")] <- electionName#
 #
-names(M)[names(M) == "Language"] <- "languageOfUse"#
+  yMax <- ceiling(max(G$sampleSize, na.rm = TRUE)/10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))*(10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))#
 #
-M$languageOfUse[M$languageOfUse == 1] <- "English"#
-M <- subset(M, !is.na(languageOfUse))#
+  breakIntervals <- c(100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000)#
+  breaks <- seq(0, yMax, by = breakIntervals[min(which(yMax / breakIntervals < 10))])#
 #
-M$dateTime <- chron(dates = M$dateStamp, times = M$timeStamp, format = c(dates = "y-m-d", times = "h:m:s"))#
-M$dateTime <- chron(as.numeric(M$dateTime) + as.numeric(times("14:00:00")), format = c(dates = "y-m-d", times = "h:m:s")) # AST is 14 hours ahead of EST.#
+  breakLabels <- format(breaks, big.mark=",")#
 #
-M <- M[order(M$dateTime),]#
-M <- M[M$dateTime >= dates("15-01-13", format = "y-m-d"),]#
-## DATE#
-M$date <- paste0("20", gsub("-", "", as.character(dates(M$dateTime))))
-## TIME#
-M$time <- substr(as.character(M$dateTime), 11, 18)#
+  if(language == "French") Sys.setlocale(locale="en_CA.UTF-8")#
 #
-# Makes use of functions from 'chron' package#
-M$seconds <- seconds(M$dateTime) + (minutes(M$dateTime)*60) + (hours(M$dateTime)*3600)#
+  print(#
+    ggplot(G, aes(x = date, y = sampleSize, width = 0.75)) +#
+      my.theme(base_size = 11, borderless = 2, grid.y_colour = "grey90") +#
+      coord_cartesian(y = c(0, yMax)) +#
+      scale_x_discrete(labels = dateNames) +#
+      scale_y_continuous(breaks = breaks, labels = breakLabels) +#
+      labs(x = "", y = "", title = paste(title, "\n\n", sep = "")) +#
+      geom_hline(yintercept = 0, size = 0.5) +#
+      geom_bar(stat = "identity", colour = "black", size = 0.3, fill = "white", drop = TRUE) +#
+      theme(legend.position = "none",#
+            axis.ticks.y = element_line(colour = "transparent", size = 0),#
+            axis.ticks.margin = unit(0.2, "cm"),#
+            plot.margin = unit(c(0.5, 1.25, -0.25, 0.75), "lines"),#
+            axis.text.x = element_text(angle=-45, vjust = 1.1, hjust = 0, size = 9))#
+  )#
+}#
 #
-## DISTRICT ID#
-M$district_id[M$district_id == 0] <- NA#
+###########
+########## MAKE DATASET VARIABLES NUMERIC#
+###########
 #
-## POSTAL CODE#
-# M$postal_code <- gsub("[^0-9]", "", M$postal_code) #
-# M$postal_code[nchar(M$postal_code) != 4] <- NA#
-M$postal_code <- gsub("^[\\s+ \\. A-Z a-z \\`]|[\\s+ \\/ A-Z a-z \\( \\#]$", "", M$postal_code)#
-M$postal_code[apply(as.matrix(M$postal_code),1, nchar) != 4 | grepl("[0-9][0-9][0-9][0-9]", M$postal_code) == FALSE] <- NA#
+makeNumeric <- function(X, varNames){#
+  if(any(!varNames %in% names(X))) stop("Not all variables in dataset.")#
+  for(i in 1:length(varNames)){#
+    colNum <- which(names(X) == varNames[i])#
+    X[, colNum] <- as.numeric(X[, colNum])#
+  }#
+  return(X)#
+}#
 #
-# M$postal_code <- gsub(" ", "", M$p)#
-# M$postal_code <- toupper(gsub(" ", "", M$postal_code))#
+###########
+########## CLEAN CATEGORICAL VARIABLES#
+###########
 #
-valsqd2 <- c("Woman","Man", NA)#
-valsqd3 <- c("1982", "1975", "1990", "1980", "1993", "1988", "1994", "1995", "1969", "1987", "1983", "1977", "1961", "1992", "1952", "1996", "1968", "1984", "1986", "1960", #
- "1981", "1972", "1979", "1965", "1978", "1989", "1971", "1963", "2000", "1997", "1967", "1951", "1999", "1955", "1954", "1948", "1949", "1958", "1985", "1976", #
- "1953", "1973", "1950", "1964", "1974", "1998", "1966", "1962", "1991", "1970", "1956", "1957", "1939", "1946", "1938", "1941", "1959", "1944", "1945", "1940", #
- "1947", "1943", "1942", "2001", "1937", "1931", "1936", "2004", "1933", "1935", "1932", "1900", "1927", "2003", "2002", "1934", "2014", "1928", "1901", "1929", #
- "1930", "1926", "1923", "2011", "1921", "1925", "2005", "1924", "1918", "1913", "1922", "1915", "1919", "2007", "1920", "2010", "1916", "2008", "2013", "1904", #
- "1914", "2006", "1912", "1903", "1909", NA)#
-valsqd4 <- c("Master Degree Level", "Bachelor Degree Level", "Year 12", "Graduate Diploma Level", "Doctoral Degree Level", #
-  "Advanced Diploma and Associate Degree Level", "Year 10", "Certificate III", "Graduate Certificate Level", "Year 9" , #
-  "Year 11", "Diploma Level", "Certificate I" , "Certificate IV", "Certificate II", "Year 8 or below", NA)#
-valsqd5 <-  c("No", "Full-time student", "Part-time student", NA)#
+# varName <- M$incomeRaw#
+# category <- "incomeRaw"#
 #
-valsqd6 <- c(#
-"Information media and telecommunications",#
-"Stay-at-home parent",#
-"Professional, scientific, and technical services",#
-"Accommodation and food services",#
-"Agriculture, forestry, and fishing",#
-"Retail trade",#
-"Arts and recreation services",#
-"Mining",#
-"Student without other employment",#
-"Other services",#
-"Wholesale trade",#
-"Administrative and support services",#
-"Public administration and safety",#
-"Health care and social assistance",#
-"Education and training",#
-"Unemployed (searching for employment)",#
-"Financial and insurance services",#
-"Retired",#
-"Electricity, gas, water, and waste services",#
-"Transport, postal, and warehousing",#
-"Manufacturing",#
-"Rental, hiring, and real estate services",#
-"Unemployed (not currently searching for employment)",#
-"Construction", NA)#
+# varName <- M$voteChoicePartyLeaningRaw#
+# category <- "voteChoicePartyLeaningRaw"#
+# election <- "NewZealand2014"#
+# directory <- cleanDir#
 #
-valsqd7 <- c("Somewhat interested","Very interested","Not very interested","Not at all interested", NA)#
+cleanCatVar <- function(varName, category, election = "Canada", directory) {#
+  ## This function is designed to clean raw categorical variables with values from a pre-existing, election-specific #
+  ## master list of categories.#
 #
-valsqd8 <- c( "Daily", "Rarely", "Several times each week", "Several times each month", "Never", NA)#
+  ## require(xlsx) package to load .xlsx files by sheet name#
+  require(xlsx)#
 #
-valsqd10 <- c(#
-"Liberal National Party of Queensland",#
-"I did not vote",#
-"Other party or candidate",#
-"I do not remember",#
-"Australian Labor Party - State of Queensland",#
-"Queensland Greens",#
-"Katter's Australian Party",#
-"Palmer United Party",#
-"One Nation Queensland Division",#
-"Family First Party - Queensland Division",#
-"I spoiled my ballot", NA#
-)#
+  ## Set working directory to find election match .xlsx file#
+  setwd(directory)#
 #
-valsqd13 <- c( "Not very important", "Very important", "Not important at all", "Somewhat important", NA)#
+  ## Load category list from .xlsx master list data file#
+  pattern <- paste0("^",election, "Match")#
+  fileName <- grep(pattern, list.files(), value = TRUE)#
+  masterListData <- read.xlsx(fileName, sheetName = category, stringsAsFactors = FALSE, header = FALSE, encoding = "UTF-8")#
 #
-valsqd14 <- c(6, 4, 5, 3, 7, 2, 1, 0, 8, 10, 9, NA )#
+  ## Check data to make sure the categories of the variable are a proper subset of masterListData[, 1]#
+  if(!all(varName[!is.na(varName)] %in% masterListData[, 1])) {#
+    print(unique(na.omit(varName[!varName %in% masterListData[, 1]])))#
+    stop("There are categories in the variable that are not in the matching file (SEE ABOVE WARNING MESSAGE)")#
+  }#
+  ## return a vector with the cleaned values that matches the previously uncleaned value order in the variable#
+    return(masterListData[match(varName, masterListData[, 1]), 2])#
+}#
 #
-valsqd18 <- c( #
-"$3,000 to $3,499 per week (or $156,000 to $181,999 per year)",#
-"$1,500 to $1,999 per week (or $78,000 to $103,999 per year)",#
-"$1,000 to $1,249 per week (or $52,000 to $64,999 per year)",#
-"$2,500 to $2,999 per week (or $130,000 to $155,999 per year)",#
-"$1,250 to $1,499 per week (or $65,000 to $77,999 per year)",#
-"$800 to $999 dollars per week (or $41,600 to $51,999 per year)",#
-"$300 to $399 per week (or $15,600 to $20,799 per year)",#
-"$5,000 or more per week (or $260,000 or more per year)",#
-"$2,000 to $2,499 per week (or $104,000 to $129,999 per year)",#
-"$400 to $599 per week (or $20,800 to $31,199 per year)",#
-"$200 to $299 per week (or $10,400 to $15,599 per year)",#
-"$4,000 to $4,999 per week (or $208,000 to $259,999 per year)",#
-"$3,500 to $3,999 per week (or $182,000 to $207,999 per year)",#
-"$600 to $799 per week (or $31,200 to $41,599 per year)",#
-"$1 to $199 per week (or $1 to $10,399 per year)",#
-"Nil or negative income", NA#
-)#
-valsq27s <- c("0","6","7","5","3","9","8","10","4","2","1", NA)#
-valsq28s <- c("0","6","7","5","3","9","8","10","4","2","1", NA) #
-valsq29s <- c("0","10","8","3","7","5","4","1","9","6","2", NA)#
+###########
+########## VOX POP LABS TABLE#
+###########
 #
-valsq30s <- c("0","5","7","6","10","4","8","9","2","1","3", NA)#
+vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, label.category = NULL, by.subset = NULL, #
+            type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL){#
+  require(plyr)#
+  require(survey)#
+  DF = data.frame()#
+  if(!is.null(by)) {D = data.frame(x, group1 = by, w = weight, stringsAsFactors = FALSE)#
+  }else{ D = data.frame(x, group1 = "Overall", w = weight, stringsAsFactors = FALSE) }#
+  #default Sort#
+  sortData <- sortData[1]#
+  #default type#
+  type <- type[1]#
+  # if by.subset is a data.frame, convert it to a vector #
+  if(is.data.frame(by.subset)) by.subset <- as.vector(t(by.subset)) #
+  # label.x is a vector #
+  if(is.vector(label.x)){#
+    if(length(label.x) != (ncol(D) -2)) {#
+      stop("The length of labels.x does not match the number of variables.")#
+    }#
+    if(length(names(label.x)) > 0) { #
+      label.x <- data.frame(variable = names(label.x), category1 = label.x) #
+    }else{#
+      label.x <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.x)#
+    }#
+  }#
 #
-valsList <- list(valsqd2, valsqd3, valsqd4, valsqd5, valsqd6, valsqd7, valsqd8, valsqd10, valsqd13, valsqd14, valsqd18, valsq27s, valsq28s, valsq29s, valsq30s)#
-valsMatrix <- M[, c("qd2", "qd3", "qd4", "qd5", "qd6", "qd7", "qd8", "qd10", "qd13", "qd14", "qd18", "q27s", "q28s", "q29s", "q30s" )]                          #
+  if(is.data.frame(label.x)) names(label.x) <- c("variable", paste0("category", 1:(ncol(label.x) - 1)))#
+    # label.by is a vector #
+  if(is.vector(label.by)){#
+    if(length(names(label.by)) > 0) { #
+      label.by <- data.frame( group1 = names(label.by), group1Labels = label.by) #
+    }else{#
+      label.by <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.by)#
+    }#
+  }#
 #
-idx <- apply(as.matrix(1:15), 1, function(x) (valsMatrix[,x] %in% valsList[[x]]))#
-idxF <- apply(idx, 1, function(x) sum(x) < 15)#
+  if(is.data.frame(label.by)) names(label.by) <- c("group1", "group1Labels")#
 #
-M <- M[!idxF, ]
-nrow(M)
-ncol(M)
-names(M)
-QueenslandRaw <- M[sample(1:nrow(M),10000), ]
-dim(QueenslandRaw)
+  if( !is.null(by.subset) ) D <- subset(D, group1 %in% by.subset)#
+#
+  if(is.numeric(D[,1])){#
+    DF <- ddply(D, .(group1), function(X){ colwise(weighted.mean, names(X)[1:(ncol(X)-2)]) (X, na.rm = TRUE, w = X$w) })#
+    DF <- melt(DF, id.vars = "group1", strinsAsFactors = FALSE)#
+  }else{#
+    Table <- svydesign(id = ~0, weights = ~ D$w, data = D)#
+    for(i in 1: (ncol(D) - 2)){#
+      variableOfInterest <- as.formula(paste0("~", names(D)[i], "+ group1"))#
+      sum.by <- 2#
+      if(type == "within") sum.by = 1#
+      SingleQuestion <-   melt(prop.table(svytable(variableOfInterest, design = Table, Ntot = 100), sum.by), stringsAsFactors = FALSE)#
+      SingleQuestion$value <- SingleQuestion$value * 100#
+      names(SingleQuestion)[1] <- "category1"#
+      SingleQuestion$variable <- names(D)[i]#
+      DF <- rbind.fill(DF, SingleQuestion)#
+    }#
+    if( !is.null(label.x) ) names(label.x) <- c("variable", "variableRename")#
+  }#
+  if( !is.null(label.x) ) DF <- merge(DF, label.x, by = "variable", all = FALSE)#
+  if( !is.null(label.by) ) DF <- merge(DF, label.by, by = "group1", all = FALSE)#
+  if(!is.null(label.category)) { #
+    names(DF)[names(DF) == "category1"] <- "category1Old"#
+    names(label.category) <- c("variable", "category1Old", paste0("category", 1:(ncol(label.category) -2)))#
+    DF <- merge(DF, label.category, by = c("variable","category1Old"), all = FALSE)#
+  }#
+  if(is.null(DF$category1)) DF$category1 <- DF$variable #
+  if(sortData == "alphabet"){#
+    DF$category1 <- as.character(DF$category1)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }else if(sortData == "rank"){#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"value"]),])#
+  }else if(sortData == "manual"){#
+    DF$category1 <- factor(DF$category1, levels = categoryOrder)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }#
+#
+  if(!is.null(label.category)) {#
+    for(i in 3:ncol(label.category)){#
+      var <- paste0("category", (i-2))#
+      DF[, var] <- factor(DF[,var], levels = unique(label.category[,i]))  #
+    }#
+  }#
+  if( !is.null(label.category) ) DF$category1Old <- factor(DF$category1Old, levels = sort(unique(DF$category1Old)))#
+  if( !is.null(by.subset) ) DF$group1 <- factor(DF$group1, levels = by.subset)#
+  DF <- DF[, sort(names(DF))]#
+#
+  return(DF)#
+}
+library(lme4)#
+library(arm)#
+library(data.table)#
+library(xlsx)#
+#
+PanelCanada <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/Panel-Canada.csv", stringsAsFactors = FALSE, fileEncoding = "UTF-8"); invisible(gc())
+OntarioPanel <- subset(PanelCanada, province == "Ontario")
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+head(LHIN)
+options(java.parameters = "-Xmx16g")
+library(xlsx)
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+invisible(gc())
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+invisible(gc())
+# library(lme4)#
+# library(arm)#
+# library(data.table)#
+# library(xlsx)#
+#
+PanelCanada <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/Panel-Canada.csv", stringsAsFactors = FALSE, fileEncoding = "UTF-8"); invisible(gc())#
+#
+OntarioPanel <- subset(PanelCanada, province == "Ontario")#
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)#
+#
+names(LHIN) <- c("postalCode","dauId", "cd","csduId","csdName", "csdType","lhin","lhinName")#
+#
+lhinPanel <- merge(OntarioPanel, LHIN, by = "postalCode", all = FALSE)#
+#
+lhinPanel$age <- 2014 - as.integer(lhinPanel$birthYearRaw)#
+lhinPanel$ageGroup <- as.character(NA)#
+lhinPanel$ageGroup[lhinPanel$age <= 29.5] <- "Age 18-29"#
+lhinPanel$ageGroup[lhinPanel$age > 29.5 & lhinPanel$age <= 39.5] <- "Age 30-39"#
+lhinPanel$ageGroup[lhinPanel$age > 39.5 & lhinPanel$age <= 49.5] <- "Age 40-49"#
+lhinPanel$ageGroup[lhinPanel$age > 49.5 & lhinPanel$age <= 64.5] <- "Age 50-64"#
+lhinPanel$ageGroup[lhinPanel$age > 64.5] <- "Age 65+"#
+cleanDir <- "~/Dropbox (Vox Pop Labs)/Data/VoteCompass/Toronto2014/Auxiliary"
+library(survey)#
+library(ggplot2)#
+library(gridExtra) # for unit()#
+library(reshape) # for melt()#
+library(plyr)#
+library(multicore)#
+options(java.parameters = "-Xmx16g") # Set the java heap size to 16gb (RAM). Load before xlsx library.#
+library(xlsx)#
+library(Zelig)#
+library(Amelia)#
+library(chron)#
+library(blme) # MRP#
+library(lme4) # MRP#
+library(arm) # MRP#
+library(extrafont) # Update fonts with font_import()#
+library(data.table)#
+##### BASIC THEME#
+#
+my.theme <- function(base_size = 11, base_family = "",#
+                     grid.x_colour = NA, grid.y_colour = NA,#
+                     grid.x_linetype = 1, grid.y_linetype = 1,#
+                     strip_colour = "grey15", strip_text = "black",#
+                     background_colour = "transparent",#
+                     tick_colour = "black",#
+                     borderless = 0, bordersize = 0.5){ #
+  if(is.na(grid.x_colour)) grid.x_colour <- "transparent"#
+  if(is.na(grid.y_colour)) grid.y_colour <- "transparent"#
+  if(borderless == 2){#
+    border <- theme(#axis.line = element_line(colour = "black", size = 0.25`),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+#
+  else if(borderless == 1){#
+    border <- theme(axis.line = element_line(colour = "black", size = 0.25),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+  else if(borderless == 0) border <- theme()#
+    theme( #
+      axis.text.x       = element_text(family = base_family, colour = "grey15", size = base_size, vjust = 1, lineheight = 0.9),#
+      axis.text.y       = element_text(family = base_family, colour = "grey15", size = base_size, hjust = 1, lineheight = 0.9),#
+      axis.ticks        = element_line(colour = tick_colour, size = 0.2),#
+      axis.ticks.length = unit(0.25, "lines"),#
+      axis.ticks.margin = unit(0.15, "cm"),#
+      axis.title.x      = element_text(family = base_family, size = base_size, colour = "black", vjust = -0.5),#
+      axis.title.y      = element_text(family = base_family, size = base_size, angle = 90, colour = "black", vjust = 0.25),#
+      legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),#
+      legend.key = element_blank(), #element_rect(colour = "transparent", fill = "transparent") #
+      legend.key.size = unit(0.6, "lines"),#
+      legend.text = element_text(family = base_family, size = base_size, face = "italic", lineheight = 1),#
+      legend.text.align = 0, #
+      legend.title = element_text(family = base_family, size = base_size, face = "plain", hjust = 0),#
+      legend.title.align = 0,#
+      legend.position = "top",#
+      legend.direction = "horizontal",#
+      legend.justification = c(1, 1),#
+      panel.background = element_rect(fill = "transparent", colour = "black", size = 0.25),#
+      panel.border = element_rect(fill = "transparent", colour = "black", size = bordersize),#
+      panel.grid.major.x = element_line(colour = grid.x_colour, size = 0.15, linetype = grid.x_linetype),#
+      panel.grid.major.y = element_line(colour = grid.y_colour, size = 0.15, linetype = grid.y_linetype),#
+      panel.grid.minor = element_blank(),#
+      panel.margin = unit(0.75, "lines"),#
+      strip.background = element_rect(fill = strip_colour, colour = "black", size = 0), # STRIP BACKGROUND#
+      strip.text.x = element_text(family = base_family, size = base_size, face = "plain", colour = strip_text),#
+      strip.text.y = element_text(family = base_family, size = base_size, face = "plain", angle = -90, colour = strip_text),#
+      plot.background = element_rect(fill = background_colour, colour = background_colour),#
+      plot.title = element_text(family = base_family, size = base_size * 1.1, vjust = 0, face = "bold")#
+    ) +#
+    border#
+}#
+#
+# Auto-break a graph title#
+#
+# title <- "Hello"#
+# title <- "When providers gave me instructions, they always asked me whether you would have any problems doing what you needed to do to take care of your illness or health condition."#
+# maxTitle <- 58#
+# numLines <- 5#
+#
+makeTitle <- function(title, titleLines = 2, maxTitle = 58){#
+    n <- ceiling(nchar(title) / maxTitle)#
+    if(nchar(title) / maxTitle > titleLines){#
+       warningMessage <- paste0("The number of lines in your title is too few for the number of characters. Setting titleLines to ", ceiling(nchar(title) / maxTitle), ".")#
+       warning(warningMessage)#
+       titleLines <- ceiling(nchar(title) / maxTitle)#
+    }#
+    if(n == 1) return(paste0(c(rep("\n", titleLines - 1), title), collapse = ""))#
+#
+    newTitle <- ""#
+    for(i in 1:(n-1)){#
+        cutNear <- nchar(title)/(n+1-i)#
+        cutAt <- unlist(gregexpr(" ", title))[which(abs(cutNear - unlist(gregexpr(" ", title))) == min(abs(cutNear - unlist(gregexpr(" ", title)))))] - 1#
+        newTitle[i] <- substr(title, 1, cutAt)#
+        title <- substr(title, cutAt+2, nchar(title))#
+    }#
+    newTitle <- paste(c(newTitle, title), collapse = "\n")#
+#
+    return(paste0(c(rep("\n", titleLines - n), newTitle), collapse = ""))#
+}#
+#
+########## WEIGHT FUNCTION#
+#
+weight <- function(Data, WeightData, variables, trim = TRUE){#
+    require(ebal)#
+    require(plyr)#
+#
+    if(!all(variables %in% names(Data))){#
+        stopMessage <- paste0("Dataset does not contain the following variables:\n ", variables[which(!variables %in% names(Data))])#
+        stop(stopMessage)#
+    }#
+#
+    if(!all(variables %in% names(WeightData))){#
+        stopMessage <- paste0("Weighting dataset does not contain the following variables:\n ", variables[which(!variables %in% names(WeightData))])#
+        stop(stopMessage)#
+    }#
+#
+    makeBinary <- function(x, removeLast = TRUE){#
+        categories <- unique(na.omit(x))#
+        D <- matrix(ncol = length(categories), nrow = length(x))#
+#
+        for(i in 1:length(categories)){#
+          D[, i] <- as.integer(x == categories[i])#
+        }#
+        invisible(gc())#
+#
+        if(removeLast == FALSE) return(D)#
+        else if(removeLast == TRUE) return(D[, -ncol(D)])#
+    }#
+#
+    Data$treatment <- 0#
+    WeightData$treatment <- 1#
+#
+    missingRows <- which(apply(Data[, which(names(Data) %in% c("treatment", variables))], 1, function(X) any(is.na(X))))#
+    if(length(missingRows > 0)) warning("Missing data in dataset.")#
+#
+    # Dataset which has missing data and cannot be weighted#
+    MissingData <- data.frame()#
+    if(length(missingRows) > 0){#
+      MissingData <- Data[missingRows, ]#
+      Data <- Data[-missingRows, ]#
+    }#
+    Merged <- rbind.fill(Data[, which(names(Data) %in% c("treatment", variables))],#
+                         WeightData[, which(names(WeightData) %in% c("treatment", variables))])#
+#
+    treatment <- as.matrix(Merged$treatment); invisible(gc())#
+#
+    X <- matrix(nrow = nrow(Merged), ncol = 0)#
+    for(i in 1:length(variables)){#
+        X <- cbind(X, makeBinary(Merged[, i], removeLast = TRUE))#
+    }#
+    invisible(gc())#
+    eb.out <- ebalance(Treatment = treatment, X = X)#
+    invisible(gc())#
+    if(trim == TRUE) eb.out <- ebalance.trim(eb.out)#
+#
+    Data$weight <- eb.out$w#
+#
+    if(nrow(MissingData) > 0) Data <- rbind.fill(Data, MissingData)#
+    Data <- Data[, -which(names(Data) == "treatment")]#
+    row.names(Data) <- 1:nrow(Data)#
+    return(Data)#
+#
+}#
+#
+###########
+########## BAR GRAPH (GENERIC)#
+###########
+# Data <- RegionBroadUndecided#
+# yMax = NULL;#
+# colour = RegionBroadColours;#
+# fontsize = 11;#
+# decimal = 0;#
+# scale = 3;#
+# ncol = NA;#
+# sortCategories = FALSE;#
+# title = "";#
+# fill.horiz = "group1"#
+barGraph <- function(Data, yMax = NULL, colour = NULL, fontsize = 11, decimal = 0, scale = 3, ncol = NA, sortCateType = "none", title = "", legend.position = "top", xlabels = NULL){#
+  if(is.null(yMax)){#
+    yMax <- max(Data$value)#
+    yMax <- yMax + (0.16 * yMax)# Add 15% of the max to the y-axis height to leave room for number on top of bar#
+  }#
+  if(is.null(colour)) colour <- c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4", "grey40")#
+#
+  if(!is.factor(Data$group1)) Data$group1 <- factor(Data$group1, levels = unique(Data$group1))#
+  levels(Data$group1) <- paste0(" ", levels(Data$group1), "  ")#
+  if(!is.null(names(colour))) names(colour) <- paste0(" ", names(colour), "  ")#
+  if(is.na(ncol)) ncol <- length(unique(Data$group1))#
+  if(ncol > length(unique(Data$group1))) ncol <- length(unique(Data$group1))#
+#
+  # Sort category1 by a name of each category#
+  if(sortCateType == "order") Data <- Data[with(Data, order(category1)),]#
+  # Sort category1 descendingly by an overall mean value of each category#
+  else if(sortCateType == "value") Data$category1 <- reorder(Data$category1, -Data$value, mean) #Data <- Data[with(Data, order())]#
+#
+  # Formatting the text of value labels for each bar graph by the number of decimal inputted#
+  Data$valueLabel <- sprintf(paste0("%.", decimal, "f"), round(Data$value, decimal))#
+  # xlabels is unspecified#
+  if(is.null(xlabels)){#
+    xbreaks <- unique(as.character(Data$category1))#
+    xlabels <- unique(as.character(Data$category1))#
+  # xlabels is specified as a vector#
+  }else if(is.vector(xlabels)){#
+    if(is.null(names(xlabels))) xbreaks <- unique(as.character(Data$category1))#
+    else xbreaks <- names(xlabels)#
+  # xlabels is specified as a data frame with the 1st column - an origional name of category1, #
+  # the 2nd column - an new name of category1#
+  }else if(is.data.frame(xlabels)){#
+    xbreaks <- as.character(xlabels[,1])#
+    xlabels <- as.character(xlabels[,2])#
+  }#
+#
+  print(ggplot(Data, aes(x = category1, y = value, label = valueLabel, fill = group1, colour = group1)) +#
+          my.theme(base_size = fontsize, borderless = 2,#
+                   background_colour = "transparent", tick_colour = "#A0A4A2") +#
+          coord_cartesian(y = c(0, yMax)) +#
+          scale_y_continuous(breaks = c()) +#
+          scale_x_discrete(breaks = xbreaks, labels = xlabels) +#
+          labs(x = "", y = "", title = title, colour = "", fill = "") +#
+          geom_bar(stat = "identity", fill = "transparent", position = position_dodge(width = 0.85), width = 0.6, size = 0.7, alpha = 1) +#
+          geom_bar(stat = "identity", position = position_dodge(width = 0.87), width = 0.6, size = 0.7, alpha = 0.88) +#
+          geom_text(colour = "grey15", stat = "identity", position = position_dodge(width = 0.85), size = (fontsize/scale), vjust = -0.85) +#
+          geom_hline(yintercept = 0, colour = "#A0A4A2", size = 0.5) +#
+          scale_fill_manual(values = colour) +#
+          scale_colour_manual(values = colour) +#
+          theme(plot.margin = unit(c(0, 0.5, -0.5, -1), "lines"),#
+                legend.position = legend.position) +#
+          guides(fill = guide_legend(ncol = ncol, byrow = TRUE,#
+                 override.aes = list(colour = "transparent")#
+                 ))#
+       )#
+#
+}#
+###########
+########## CREATE GRAPH OF DAILY RESPONDENTS#
+###########
+#
+dailyRespondents <- function(Data, language = "English", electionDay){#
+  if(!"date" %in% names(Data)) stop("date does not exist")#
+  title <- "Number of Users per Day"#
+  electionName <- "Election"#
+  if(language == "French"){#
+    Sys.setlocale(locale="fr_CA.UTF-8")#
+    title <- "Nombre d'utilisateurs"#
+    electionName <- "élections"#
+  }#
+#
+  require(scales)#
+  G <- data.frame(table(Data$date), stringsAsFactors = FALSE)#
+  names(G)[1] <- "date"#
+  names(G)[2] <- "sampleSize"#
+  G$date <- as.Date(as.character(G$date), format = "%Y%m%d")#
+  missingDates <- seq(min(G$date), max(G$date), by = "days")[which(!seq(min(G$date), max(G$date), by = "days") %in% G$date)]#
+  missingDates <- seq(min(G$date), as.Date(as.character(electionDay), "%Y%m%d"), by = "days")#
+  missingDates <- missingDates[!missingDates %in% G$date]#
+#
+  if(length(missingDates) != 0){#
+    G[nrow(G):nrow(G)+length(missingDates), ] <- NA#
+    G$date[(nrow(G)-length(missingDates)+1):nrow(G)] <- missingDates#
+  }#
+#
+  G$sampleSize[is.na(G$sampleSize)] <- 0#
+#
+  G$date <- factor(as.factor(G$date), levels = as.factor(seq(min(G$date, na.rm = TRUE), max(G$date, na.rm = TRUE), by = "days")))#
+  dateNames <- format(as.Date(levels(G$date)), format="%b %d")#
+  dateNames[dateNames == format(as.Date(as.character(electionDay), format = "%Y%m%d"), format="%b %d")] <- electionName#
+#
+  yMax <- ceiling(max(G$sampleSize, na.rm = TRUE)/10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))*(10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))#
+#
+  breakIntervals <- c(100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000)#
+  breaks <- seq(0, yMax, by = breakIntervals[min(which(yMax / breakIntervals < 10))])#
+#
+  breakLabels <- format(breaks, big.mark=",")#
+#
+  if(language == "French") Sys.setlocale(locale="en_CA.UTF-8")#
+#
+  print(#
+    ggplot(G, aes(x = date, y = sampleSize, width = 0.75)) +#
+      my.theme(base_size = 11, borderless = 2, grid.y_colour = "grey90") +#
+      coord_cartesian(y = c(0, yMax)) +#
+      scale_x_discrete(labels = dateNames) +#
+      scale_y_continuous(breaks = breaks, labels = breakLabels) +#
+      labs(x = "", y = "", title = paste(title, "\n\n", sep = "")) +#
+      geom_hline(yintercept = 0, size = 0.5) +#
+      geom_bar(stat = "identity", colour = "black", size = 0.3, fill = "white", drop = TRUE) +#
+      theme(legend.position = "none",#
+            axis.ticks.y = element_line(colour = "transparent", size = 0),#
+            axis.ticks.margin = unit(0.2, "cm"),#
+            plot.margin = unit(c(0.5, 1.25, -0.25, 0.75), "lines"),#
+            axis.text.x = element_text(angle=-45, vjust = 1.1, hjust = 0, size = 9))#
+  )#
+}#
+#
+###########
+########## MAKE DATASET VARIABLES NUMERIC#
+###########
+#
+makeNumeric <- function(X, varNames){#
+  if(any(!varNames %in% names(X))) stop("Not all variables in dataset.")#
+  for(i in 1:length(varNames)){#
+    colNum <- which(names(X) == varNames[i])#
+    X[, colNum] <- as.numeric(X[, colNum])#
+  }#
+  return(X)#
+}#
+#
+###########
+########## CLEAN CATEGORICAL VARIABLES#
+###########
+#
+# varName <- M$incomeRaw#
+# category <- "incomeRaw"#
+#
+# varName <- M$voteChoicePartyLeaningRaw#
+# category <- "voteChoicePartyLeaningRaw"#
+# election <- "NewZealand2014"#
+# directory <- cleanDir#
+#
+cleanCatVar <- function(varName, category, election = "Canada", directory) {#
+  ## This function is designed to clean raw categorical variables with values from a pre-existing, election-specific #
+  ## master list of categories.#
+#
+  ## require(xlsx) package to load .xlsx files by sheet name#
+  require(xlsx)#
+#
+  ## Set working directory to find election match .xlsx file#
+  setwd(directory)#
+#
+  ## Load category list from .xlsx master list data file#
+  pattern <- paste0("^",election, "Match")#
+  fileName <- grep(pattern, list.files(), value = TRUE)#
+  masterListData <- read.xlsx(fileName, sheetName = category, stringsAsFactors = FALSE, header = FALSE, encoding = "UTF-8")#
+#
+  ## Check data to make sure the categories of the variable are a proper subset of masterListData[, 1]#
+  if(!all(varName[!is.na(varName)] %in% masterListData[, 1])) {#
+    print(unique(na.omit(varName[!varName %in% masterListData[, 1]])))#
+    stop("There are categories in the variable that are not in the matching file (SEE ABOVE WARNING MESSAGE)")#
+  }#
+  ## return a vector with the cleaned values that matches the previously uncleaned value order in the variable#
+    return(masterListData[match(varName, masterListData[, 1]), 2])#
+}#
+#
+###########
+########## VOX POP LABS TABLE#
+###########
+#
+vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, label.category = NULL, by.subset = NULL, #
+            type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL){#
+  require(plyr)#
+  require(survey)#
+  DF = data.frame()#
+  if(!is.null(by)) {D = data.frame(x, group1 = by, w = weight, stringsAsFactors = FALSE)#
+  }else{ D = data.frame(x, group1 = "Overall", w = weight, stringsAsFactors = FALSE) }#
+  #default Sort#
+  sortData <- sortData[1]#
+  #default type#
+  type <- type[1]#
+  # if by.subset is a data.frame, convert it to a vector #
+  if(is.data.frame(by.subset)) by.subset <- as.vector(t(by.subset)) #
+  # label.x is a vector #
+  if(is.vector(label.x)){#
+    if(length(label.x) != (ncol(D) -2)) {#
+      stop("The length of labels.x does not match the number of variables.")#
+    }#
+    if(length(names(label.x)) > 0) { #
+      label.x <- data.frame(variable = names(label.x), category1 = label.x) #
+    }else{#
+      label.x <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.x)#
+    }#
+  }#
+#
+  if(is.data.frame(label.x)) names(label.x) <- c("variable", paste0("category", 1:(ncol(label.x) - 1)))#
+    # label.by is a vector #
+  if(is.vector(label.by)){#
+    if(length(names(label.by)) > 0) { #
+      label.by <- data.frame( group1 = names(label.by), group1Labels = label.by) #
+    }else{#
+      label.by <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.by)#
+    }#
+  }#
+#
+  if(is.data.frame(label.by)) names(label.by) <- c("group1", "group1Labels")#
+#
+  if( !is.null(by.subset) ) D <- subset(D, group1 %in% by.subset)#
+#
+  if(is.numeric(D[,1])){#
+    DF <- ddply(D, .(group1), function(X){ colwise(weighted.mean, names(X)[1:(ncol(X)-2)]) (X, na.rm = TRUE, w = X$w) })#
+    DF <- melt(DF, id.vars = "group1", strinsAsFactors = FALSE)#
+  }else{#
+    Table <- svydesign(id = ~0, weights = ~ D$w, data = D)#
+    for(i in 1: (ncol(D) - 2)){#
+      variableOfInterest <- as.formula(paste0("~", names(D)[i], "+ group1"))#
+      sum.by <- 2#
+      if(type == "within") sum.by = 1#
+      SingleQuestion <-   melt(prop.table(svytable(variableOfInterest, design = Table, Ntot = 100), sum.by), stringsAsFactors = FALSE)#
+      SingleQuestion$value <- SingleQuestion$value * 100#
+      names(SingleQuestion)[1] <- "category1"#
+      SingleQuestion$variable <- names(D)[i]#
+      DF <- rbind.fill(DF, SingleQuestion)#
+    }#
+    if( !is.null(label.x) ) names(label.x) <- c("variable", "variableRename")#
+  }#
+  if( !is.null(label.x) ) DF <- merge(DF, label.x, by = "variable", all = FALSE)#
+  if( !is.null(label.by) ) DF <- merge(DF, label.by, by = "group1", all = FALSE)#
+  if(!is.null(label.category)) { #
+    names(DF)[names(DF) == "category1"] <- "category1Old"#
+    names(label.category) <- c("variable", "category1Old", paste0("category", 1:(ncol(label.category) -2)))#
+    DF <- merge(DF, label.category, by = c("variable","category1Old"), all = FALSE)#
+  }#
+  if(is.null(DF$category1)) DF$category1 <- DF$variable #
+  if(sortData == "alphabet"){#
+    DF$category1 <- as.character(DF$category1)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }else if(sortData == "rank"){#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"value"]),])#
+  }else if(sortData == "manual"){#
+    DF$category1 <- factor(DF$category1, levels = categoryOrder)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }#
+#
+  if(!is.null(label.category)) {#
+    for(i in 3:ncol(label.category)){#
+      var <- paste0("category", (i-2))#
+      DF[, var] <- factor(DF[,var], levels = unique(label.category[,i]))  #
+    }#
+  }#
+  if( !is.null(label.category) ) DF$category1Old <- factor(DF$category1Old, levels = sort(unique(DF$category1Old)))#
+  if( !is.null(by.subset) ) DF$group1 <- factor(DF$group1, levels = by.subset)#
+  DF <- DF[, sort(names(DF))]#
+#
+  return(DF)#
+}
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}#
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")#
+#
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  (1|riding) + (1|region)"#
+#
+# model.formula <- " ~ weightAntiEstablishmentLeft + weightFaithAndFamilyRight + weightHeritageRight + weightLaissezFaireLeft + #
+#                     weightLibertarianRight + weightPostMaterialistLeft + weightSocialDemocraticLeft + weightGender1 + weightPetition1 + #
+#                     (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"#
+#
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}#
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")#
+#
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  (1|riding) + (1|region)"#
+#
+# model.formula <- " ~ weightAntiEstablishmentLeft + weightFaithAndFamilyRight + weightHeritageRight + weightLaissezFaireLeft + #
+#                     weightLibertarianRight + weightPostMaterialistLeft + weightSocialDemocraticLeft + weightGender1 + weightPetition1 + #
+#                     (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"#
+#
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}
+model.questions <- list()
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+W$weightAntiEstablishmentLeft <- (4/12.8586023) ## Anti-establishment Left #
+W$weightFaithAndFamilyRight <- (21/9.6502856) ## Faith and Family Right  #
+W$weightHeritageRight <- (15/6.7748248) ## Heritage Right           #
+W$weightLaissezFaireLeft <- (18/14.6958840) ## Laissez-Faire Left      #
+W$weightLibertarianRight <- (11/5.1941858) ## Libertarian Right        #
+W$weightPostMaterialistLeft <- (2/14.8900971) ## Post-materialist Left   #
+W$weightSocialDemocraticLeft <- (25/38.6948651) ## Social Democratic Left  #
+W$weightSteadfastRight <- (5/0.7830056) ## Steadfast Right
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}
+paste0("weight",clusterNames[i])
+w <- c("AntiEstablishmentLeft" = (4/12.8586023),#
+"FaithAndFamilyRight" = (21/9.6502856),#
+"HeritageRight" = (15/6.7748248),#
+"LaissezFaireLeft" = (18/14.6958840),#
+"LibertarianRight" = (11/5.1941858),#
+"PostMaterialistLeft" = (2/14.8900971),#
+"SocialDemocraticLeft" = (25/38.6948651),#
+"SteadfastRight" = (5/0.7830056))
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG$weightedValue <- GG$value*GG$w
+GG <- GG[order(GG$group1),]#
+ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))#
+GG$ridingTotal <- rep(ridingTotal$V1, each = 8)#
+GG$estimatedProp <- GG$value/GG$ridingTotal
+GG$weightedValue <- GG$value*(GG$w/sum(GG$w))
+GG$ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))
+GG
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*GG$w#
+GG <- GG[order(GG$group1),]
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w/sum(GG$w))
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w)
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w)#
+GG <- GG[order(GG$group1),]#
+ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))#
+GG$ridingTotal <- rep(ridingTotal$V1, each = 8)
+w <- c(#
+"AntiEstablishmentLeft" = (4),#
+"FaithAndFamilyRight" = (21),#
+"HeritageRight" = (15),#
+"LaissezFaireLeft" = (18),#
+"LibertarianRight" = (11),#
+"PostMaterialistLeft" = (2),#
+"SocialDemocraticLeft" = (25),#
+"SteadfastRight" = (5))
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG$weightedValue <- (GG$w)/GG$value
+GG$weightedValue <- (GG$w)/(GG$value*100)
+library(mi)
+data(CHAIN)
+CHAIN
+missing.pattern.plot(CHAIN, gray.scale = TRUE)
+mp.plot(CHAIN, gray.scale = TRUE)
+mp.plot(CHAIN, y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
+info <- mi.info(CHAIN)
+info
+library(CBPS)#
+library(Amelia)#
+library(plyr)#
+library(snow)#
+library(doSNOW)#
+library(doParallel)#
+library(survey)#
+#
+M$numSocioDemos <- apply(with(M, data.frame(voteChoice,#
+                                            previousVote,#
+                                            gender,#
+                                            ageGroup,#
+                                            education,#
+                                            student,#
+                                            industry,#
+                                            religion,#
+                                            religiousImportance,#
+                                            income,#
+                                            selfPlacement,#
+                                            birthplaceRaw,#
+                                            polInterest,#
+                                            polConsumption,#
+                                            polActivitiesRaw#
+                                            # issueMostImportanceRaw#
+                                            )), 1, function(X) sum(!is.na(X)))
+mp.plot(C[, noms], y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
+library(mi)
+?mi
+data(CHAIN)
+info <- mi.info(CHAIN)
+info
+info[["haartadhere.W1"]]$params
+info[["h39b.W1"]]
+3*20*49
+# Continuous#
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            "region",#
+            "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:14))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")
+library(mi)
+data(CHAIN)
+CHAIN.info <- mi.info(CHAIN)
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("haartadhere.W1" = 25))
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("haartadhere.W1" = "25"))
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("type" = "unordered-categorical"))
+CHAIN.info <- update(CHAIN.info, "type", list("haartadhere.W1" = "unordered-categorical"))
+CHAIN.info
+names(CHAIN.info)
+slotNames(CHAIN.info)
+typecast(CHAIN.info)
+str(CHAIN.info)
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            # "region",#
+            # "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:13))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")#
+#
+CompleteList <- list()#
+#
+ToImpute <- C[, c(noms, continuous, sqrts, ords)]
+# Continuous#
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            # "region",#
+            # "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:13))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")
+ToImpute <- C[, c(noms, continuous, sqrts, ords)]
+c(noms, continuous, sqrts, ords)
+c(noms, continuous, sqrts, ords) %in% names(C)
+M$numSocioDemos <- apply(with(M, data.frame(voteChoice,#
+                                            previousVote,#
+                                            gender,#
+                                            ageGroup,#
+                                            education,#
+                                            student,#
+                                            industry,#
+                                            religion,#
+                                            religiousImportance,#
+                                            income,#
+                                            selfPlacement,#
+                                            birthplaceRaw,#
+                                            polInterest,#
+                                            polConsumption,#
+                                            polActivitiesRaw#
+                                            # issueMostImportanceRaw#
+                                            )), 1, function(X) sum(!is.na(X)))#
+#
+# M$numSocioDemos <- M$numSocioDemos + M$completedActivities#
+#
+# C <- subset(M, Mobile != 1)#
+C <- M#
+#
+table(C$dayFromElection)#
+#
+C <- subset(C, numSocioDemos >= 7 & dayFromElection %in% -17:-16)#
+# C <- subset(C, dayFrom Election %in% -17:-16)#
+nrow(C)#
+#
+C$previousVote[C$previousVote == "Do not remember"] <- NA
+library(mi)
+?mi
+f <- function(x) x^2
+f
+formals(f)
+body(F)
+body(f)
+environment(f)
+attributes(f)
+body(sum)
+attributes(sum)
+sum
+VCNZ <- read.csv("/Users/uyen/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/VCForAcademicTeam.csv", stringsAsFactors = FALSE)
+nrow(VCNZ)
+names(VCNZ)
+grep("session", names(VCNZ), value = TRUE)
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)
+nrow(PES)
+names(PES)
+head(PES$responseID)
+head(PES$ResponseID)
+head(PES$RecipientEmail)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014Clean.csv", stringsAsFactors = FALSE)
+nrow(NZ)
+questions <- PES[1, ]#
+PES <- PES[-1,]
+cbind(t(questions))
+head(PES$ResponseID)
+names(NZ)
+head(session_id)
+head(NZ$session_id)
+head(PES$ResponseSet)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014EmailData.csv", stringsAsFactors = FALSE)
+table(!is.na(NZ$email))
+table(!is.na(NZ$Email))
+sum(table(!is.na(NZ$email)))
+sum(table(!is.na(NZ$Email)))
+names(PES)
+PES[1,]
+questions <- PES[1, ]#
+PES <- PES[-1,]
+PES[1,]
+table(is.na(PES$RecipientEmail))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]
+dim(PES)
+PES2 <- PES[-1,]
+nrow(PES@)
+nrow(PES2)
+head(PES)
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE, skips = c(2,3))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE, skip = c(2,3))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]
+head(PES2)
+VCNZPES <- merge(NZ, PES, by.x = "email", by.y = "RecipientEmail", all = TRUE)
+head(VCNZPES)
+nrow(VCNZPES)
+PES2$ExternalReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalReference))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]#
+PES2$ExternalDataReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]
+head(as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference)))
+PES2 <- subset(PES2, ExternalDataReference != "Test")
+nrow(PES2)
+PES2$ExternalDataReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference))
+nrow(PES)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014EmailData.csv", stringsAsFactors = FALSE)
+VCNZPES <- merge(NZ, PES, by.x = "session_id", by.y = "ExternalDataReference", all = FALSE)
+head(VCNZPES)
+head(NZ$session_id)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014Clean.csv", stringsAsFactors = FALSE)
+head(NZ)
+head(NZ$session_id)
+head(PES2$ExternalDataReference)
+VCNZPES <- merge(NZ, PES2, by.x = "session_id", by.y = "ExternalDataReference", all = FALSE)
+nrow(VCNZPES)
+head(VCNZPES)
+cbind(names(VCNZPES))
+head(VCNZPES$Status)
+head(VCNZPES$Optin)
+write.csv(VCNZPES[, -c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail",                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+write.csv(VCNZPES[, -c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+write.csv(VCNZPES[, !names(VCNZPES) %in% c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+nrow(VCNZPES)
+W <- VCNZPES[, !names(VCNZPES) %in% c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)]
+dim(W)
+dim(VCNZPES)
+names(VCNZPES)[!names(VCNZPES) %in% names(W)]
+cbind(names(W))
+W2 <- W[, c(1:148,278:706)]#
+#
+write.csv( W2, "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+nrow(W2)
+dim(W2)
+names(W2)
+t(questions)
+nrow(Weighted)
+library(pplpredict)
+data(Queensland)
+head(Queensland)
+?vplTable
+?peoplePrediction
+rm(list = ls())
+remove.packages("pplpredict")
+installed.packages()
 library(devtools)
+devtools::install_github("uyenhoang/pplpredict")
+data(Queensland)
+head(Queensland)
+peoplePrediction(Queensland, paste0("party", 1:4,"B"), c("Labor", "Greens","LibNat","Katter"))
+library(pplpredict)
+data(Queensland)
+head(Queensland)
+pplpredict(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
+peoplePrediction(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
+?peoplePredcition
+?peoplePrediction
+?maxWrapper
+??maxWrapper
+?pplpredict
+??pplpredict
+?RCIMeasure
+??RCIMeasure
+?maxWrapper
+??maxWrapper
+library(pplpredict)
+?maxWrapper
+?rescaleWrapper
+?peoplePrediction
 setwd("~/Desktop/R Packages/pplpredict")
-library(pplpredict)
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(MatchFileName) %in% list.file(dirname(MatchFileName))) { #
-        stop(paste0(MatchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", MatchFileName, ignore.case = TRUE)) stop("The MatchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(MatchFileName, sheetNames = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-names(M)[names(M) == "qd2"] <- "genderRaw"
-names(M)[names(M) == "qd4"] <- "educationRaw"
-names(M)[names(M) == "qd5"] <- "studentRaw"
-names(QueenslandRaw)[names(Queesland) == "qd5"] <- "studentRaw"
-names(QueenslandRaw)[names(QueeslandRaw) == "qd5"] <- "studentRaw"
-head(QueenslandRaw)
-names(QueenslandRaw)[names(Queensland) == "qd5"] <- "studentRaw"
-names(QueenslandRaw)[names(QueenslandRaw) == "qd5"] <- "studentRaw"
-names(QueenslandRaw)[names(QueenslandRaw) == "qd4"] <- "educationRaw"
-names(QueenslandRaw)[names(QueenslandRaw) == "qd2"] <- "genderRaw"
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(MatchFileName) %in% list.file(dirname(MatchFileName))) { #
-        stop(paste0(MatchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", MatchFileName, ignore.case = TRUE)) stop("The MatchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(MatchFileName, sheetNames = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(matchFileName) %in% list.file(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(MatchFileName, sheetNames = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(MatchFileName, sheetNames = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-?xlsx
-read.xlsx
-?read.xlsx
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(MatchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData <- function(Data, varsClean, matchFileName){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"
-!basename(matchFileName) %in% list.files(dirname(matchFileName))
-if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.")
-1:length(varsClean)
-i <- 1
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE)
-matchFile
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = FALSE)
-matchFile
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))
-paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- as.matrix(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    colnames(new.names) <- labels#
-    data.frame(new.names[x,], row.names = NULL)#
-}
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            if(!"header" %in% names(match.call())) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            if(!"header" %in% names(match.call())) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:ncol(matchFile[,-1]))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            if(!"header" %in% names(match.call())) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"
-if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.")
-if(!"header" %in% names(match.call())) header = FALSE
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
-args <- match.call()#
-            if(!"header" %in% names(args)) header = FALSE
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"
-if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.")
-args <- match.call()
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"#
-header <- FALSE
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
-matchFile
-Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))
-unique(Data$genderRaw)
-paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-head(Data[,varsClean[i]])
-matchFile
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- as.matrix(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    colnames(new.names) <- labels#
-    data.frame(new.names[x,], row.names = NULL)#
-}
-recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1)))
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- as.matrix(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    colnames(new.names) <- labels#
-    new.names[x,]#
-}
-head(recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))
-i <- 1
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))
-matchFile
-head(Data[,varsClean[i]])
-x <- Data[,varsClean[i]]
-x.new <- matchFile
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-labels
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- as.matrix(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    }
-x.new
-new.names
-uniqueVals <- unique(x[!is.na(x)])
-uniqueVals
-any(!uniqueVals %in% rownames(new.names))
-if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))
-labels
-colnames(new.names) <- labels
-new.names
-head(new.names[x,])
-class(x)
-class(x.new)
-class(new.names)
-head(x)
-new.names[head(x),]
-new.names[x,]
-new.names[x[1:100],]
-new.names[x[1:10],]
-x[1:10]
-new.names[x[1:10],]
-new.names[x[1:8],]
-new.names[x[1:7],]
-str(x)
-is.na(head(x))
-is.na(x[1:10])
-x[!is.na(x)]
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])
-uniqueVals
-if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))
-names(new.names) <- labels
-new.names
-i <- 1#
-x <- Data[,varsClean[i]]#
-x.new <- matchFile#
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    }
-new.names
-x.new
-if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))
-x.new
-new.names
-names(new.names) <- labels
-new.naems
-new.names
-D <- new.names[x, ]
-head(D)
-D <- new.names[x, ]
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    names(new.names) <- labels#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    D#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-head(NewData)
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            args <- match.call()#
-            if(!"header" %in% names(args)) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))#
-        }#
-    }#
-    Data#
-}
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    names(new.names) <- labels#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    D#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"#
-header <- FALSE#
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-head(NewData)
-i <- 1#
-x <- Data[,varsClean[i]]#
-x.new <- matchFile#
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-f(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    }
-uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    names(new.names) <- labels
-x <- Data[,varsClean[i]]#
-x.new <- matchFile#
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-varsClean[i]
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])
-uniqueVals
-if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }
-if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))
-new.names
-labels
-names(new.names) <- labels
-D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)
-head(D)
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    names(new.names) <- labels#
-    D#
-}
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            args <- match.call()#
-            if(!"header" %in% names(args)) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-i <- 1#
-x <- Data[,varsClean[i]]#
-x.new <- matchFile#
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    names(new.names) <- labels
-head(D)
-labels
-names(new.names)
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    names(D) <- labels#
-    D#
-}
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            args <- match.call()#
-            if(!"header" %in% names(args)) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-head(NewData)
-i <- 2
-Data <- QueenslandRaw#
-varsClean <- c("genderRaw","studentRaw","educationRaw")#
-matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"#
-header <- FALSE
-header = FALSE
-matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
-matchFile
-x <- Data[,varsClean[i]]
-head(x)
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-labels
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    }
-x.new
-head(Data)
-i <- 2#
-x <- Data[,varsClean[i]]#
-x.new <- matchFile#
-labels <- paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))
-if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    }
-x.new
-new.names
-uniqueVals <- unique(x[!is.na(x)])
-uniqueVals
-any(!uniqueVals %in% rownames(new.names))
-if(is.na(labels)) labels <- paste0("X",1:ncol(new.names))
-is.na(labels)
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("These values: ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             " are not the original values in x. These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(any(is.na(labels))) labels <- paste0("X",1:ncol(new.names))#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    names(D) <- labels#
-    D#
-}
-cleanData <- function(Data, varsClean, matchFileName, ...){#
-#
-    if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { #
-        stop(paste0(matchFileName, " does not exist."))#
-    }else{ #
-        if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") #
-        for(i in 1:length(varsClean)){#
-            args <- match.call()#
-            if(!"header" %in% names(args)) header = FALSE#
-            matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)#
-            Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))#
-        }#
-    }#
-    Data#
-}
-NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-head(NewData)
-recategorize(c(1,4,2,3,NA), data.frame(c(1,2,3), c(1,1,0), c(1, -1, 0)) )
-recategorize <- function(x, x.new, labels = NA){#
-#
-    if(is.vector(x.new)){#
-        if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")#
-        new.names <- as.matrix(x.new)#
-        rownames(new.names) <- names(x.new) #
-    }else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ #
-        stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, #
-             where the 1st column is the original value of x and the 2nd is the new value of x.")#
-    }else{#
-        new.names <- data.frame(x.new[,-1])#
-        rownames(new.names) <- x.new[,1]#
-        x.new <- new.names#
-    } #
-    uniqueVals <- unique(x[!is.na(x)])#
-    if(any(!uniqueVals %in% rownames(new.names)) ) {#
-        x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA#
-        msg <- paste0("A list of unique values of x does not contain ",paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), #
-                             ". These values are replaced by missing values.")#
-        warning(msg)#
-    }#
-    if(any(is.na(labels))) labels <- paste0("X",1:ncol(new.names))#
-    D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)#
-    names(D) <- labels#
-    D#
-}
-recategorize(c(1,4,2,5,3,NA), data.frame(c(1,2,3), c(1,1,0), c(1, -1, 0)) )
-recategorize(c(1,2,3), cbind(c(1,2,3), c(1,1,0)))
-recategorize(c(1,2,3), cbind(c(1,2,3), c(1,1,0), c(1,-1,0)))
-recategorize(c(1,2,3), c("1" = 1, "2" = 1, "3" = 0))
-recategorize(c(1,2,5,3,4), c("1" = 1, "2" = 1, "3" = 0))
-write.csv()
-?write.csv
-?ddply
 library(devtools)
-getwd()
 library(roxygen2)
-install()
-?rename
-library(pplpredict)
-?rename
-?cleanData
 document()
 install()
-?rename
-sys.time()
-Sys.time()
-cat("Start the imputation for ", paste0(groupNames[[i]],collapse = "|"), "at ", startTime)
-startTime <- Sys.time()#
-    cat("Start the imputation for the group:", paste0(groupNames[[i]],collapse = "|"), "at ", startTime)
-cat("Finish imputing for the group:", paste0(groupNames[[i]],collapse = "|"), "at", as.character(Sys.time()), ".The total running time is", as.character(Sys.time() - startTime),"mins")
+?QueenslandRaw
+document()
+install()
+?QueenslandRaw
+library(pplpredict)
+document()
+install()
+load_all()
+?QueenslandRaw
+system.file(extdata,"QueenslandMatch.xlsx", package = "pplpredict")
+install()
+load_all()
+system.file(extdata,"QueenslandMatch.xlsx", package = "pplpredict")
+system.file(inst,"QueenslandMatch.xlsx", package = "pplpredict")
+system.file(,"QueenslandMatch.xlsx", package = "pplpredict")
+system.file()
+install()

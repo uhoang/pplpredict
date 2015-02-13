@@ -1,0 +1,1204 @@
+library(xlsx)
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+invisible(gc())
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)
+invisible(gc())
+# library(lme4)#
+# library(arm)#
+# library(data.table)#
+# library(xlsx)#
+#
+PanelCanada <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/Panel-Canada.csv", stringsAsFactors = FALSE, fileEncoding = "UTF-8"); invisible(gc())#
+#
+OntarioPanel <- subset(PanelCanada, province == "Ontario")#
+LHIN <- read.xlsx2("~/Dropbox (Vox Pop Labs)/Uyen/LHIN/pc11toLHIN11_SLI/pc11toLHIN11_SLI.xlsx", stringsAsFactors = FALSE, sheetIndex = 1)#
+#
+names(LHIN) <- c("postalCode","dauId", "cd","csduId","csdName", "csdType","lhin","lhinName")#
+#
+lhinPanel <- merge(OntarioPanel, LHIN, by = "postalCode", all = FALSE)#
+#
+lhinPanel$age <- 2014 - as.integer(lhinPanel$birthYearRaw)#
+lhinPanel$ageGroup <- as.character(NA)#
+lhinPanel$ageGroup[lhinPanel$age <= 29.5] <- "Age 18-29"#
+lhinPanel$ageGroup[lhinPanel$age > 29.5 & lhinPanel$age <= 39.5] <- "Age 30-39"#
+lhinPanel$ageGroup[lhinPanel$age > 39.5 & lhinPanel$age <= 49.5] <- "Age 40-49"#
+lhinPanel$ageGroup[lhinPanel$age > 49.5 & lhinPanel$age <= 64.5] <- "Age 50-64"#
+lhinPanel$ageGroup[lhinPanel$age > 64.5] <- "Age 65+"#
+cleanDir <- "~/Dropbox (Vox Pop Labs)/Data/VoteCompass/Toronto2014/Auxiliary"
+library(survey)#
+library(ggplot2)#
+library(gridExtra) # for unit()#
+library(reshape) # for melt()#
+library(plyr)#
+library(multicore)#
+options(java.parameters = "-Xmx16g") # Set the java heap size to 16gb (RAM). Load before xlsx library.#
+library(xlsx)#
+library(Zelig)#
+library(Amelia)#
+library(chron)#
+library(blme) # MRP#
+library(lme4) # MRP#
+library(arm) # MRP#
+library(extrafont) # Update fonts with font_import()#
+library(data.table)#
+##### BASIC THEME#
+#
+my.theme <- function(base_size = 11, base_family = "",#
+                     grid.x_colour = NA, grid.y_colour = NA,#
+                     grid.x_linetype = 1, grid.y_linetype = 1,#
+                     strip_colour = "grey15", strip_text = "black",#
+                     background_colour = "transparent",#
+                     tick_colour = "black",#
+                     borderless = 0, bordersize = 0.5){ #
+  if(is.na(grid.x_colour)) grid.x_colour <- "transparent"#
+  if(is.na(grid.y_colour)) grid.y_colour <- "transparent"#
+  if(borderless == 2){#
+    border <- theme(#axis.line = element_line(colour = "black", size = 0.25`),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+#
+  else if(borderless == 1){#
+    border <- theme(axis.line = element_line(colour = "black", size = 0.25),#
+                    panel.border = element_blank(),#
+                    panel.background = element_blank(),#
+                    strip.background = element_blank())#
+  }#
+  else if(borderless == 0) border <- theme()#
+    theme( #
+      axis.text.x       = element_text(family = base_family, colour = "grey15", size = base_size, vjust = 1, lineheight = 0.9),#
+      axis.text.y       = element_text(family = base_family, colour = "grey15", size = base_size, hjust = 1, lineheight = 0.9),#
+      axis.ticks        = element_line(colour = tick_colour, size = 0.2),#
+      axis.ticks.length = unit(0.25, "lines"),#
+      axis.ticks.margin = unit(0.15, "cm"),#
+      axis.title.x      = element_text(family = base_family, size = base_size, colour = "black", vjust = -0.5),#
+      axis.title.y      = element_text(family = base_family, size = base_size, angle = 90, colour = "black", vjust = 0.25),#
+      legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),#
+      legend.key = element_blank(), #element_rect(colour = "transparent", fill = "transparent") #
+      legend.key.size = unit(0.6, "lines"),#
+      legend.text = element_text(family = base_family, size = base_size, face = "italic", lineheight = 1),#
+      legend.text.align = 0, #
+      legend.title = element_text(family = base_family, size = base_size, face = "plain", hjust = 0),#
+      legend.title.align = 0,#
+      legend.position = "top",#
+      legend.direction = "horizontal",#
+      legend.justification = c(1, 1),#
+      panel.background = element_rect(fill = "transparent", colour = "black", size = 0.25),#
+      panel.border = element_rect(fill = "transparent", colour = "black", size = bordersize),#
+      panel.grid.major.x = element_line(colour = grid.x_colour, size = 0.15, linetype = grid.x_linetype),#
+      panel.grid.major.y = element_line(colour = grid.y_colour, size = 0.15, linetype = grid.y_linetype),#
+      panel.grid.minor = element_blank(),#
+      panel.margin = unit(0.75, "lines"),#
+      strip.background = element_rect(fill = strip_colour, colour = "black", size = 0), # STRIP BACKGROUND#
+      strip.text.x = element_text(family = base_family, size = base_size, face = "plain", colour = strip_text),#
+      strip.text.y = element_text(family = base_family, size = base_size, face = "plain", angle = -90, colour = strip_text),#
+      plot.background = element_rect(fill = background_colour, colour = background_colour),#
+      plot.title = element_text(family = base_family, size = base_size * 1.1, vjust = 0, face = "bold")#
+    ) +#
+    border#
+}#
+#
+# Auto-break a graph title#
+#
+# title <- "Hello"#
+# title <- "When providers gave me instructions, they always asked me whether you would have any problems doing what you needed to do to take care of your illness or health condition."#
+# maxTitle <- 58#
+# numLines <- 5#
+#
+makeTitle <- function(title, titleLines = 2, maxTitle = 58){#
+    n <- ceiling(nchar(title) / maxTitle)#
+    if(nchar(title) / maxTitle > titleLines){#
+       warningMessage <- paste0("The number of lines in your title is too few for the number of characters. Setting titleLines to ", ceiling(nchar(title) / maxTitle), ".")#
+       warning(warningMessage)#
+       titleLines <- ceiling(nchar(title) / maxTitle)#
+    }#
+    if(n == 1) return(paste0(c(rep("\n", titleLines - 1), title), collapse = ""))#
+#
+    newTitle <- ""#
+    for(i in 1:(n-1)){#
+        cutNear <- nchar(title)/(n+1-i)#
+        cutAt <- unlist(gregexpr(" ", title))[which(abs(cutNear - unlist(gregexpr(" ", title))) == min(abs(cutNear - unlist(gregexpr(" ", title)))))] - 1#
+        newTitle[i] <- substr(title, 1, cutAt)#
+        title <- substr(title, cutAt+2, nchar(title))#
+    }#
+    newTitle <- paste(c(newTitle, title), collapse = "\n")#
+#
+    return(paste0(c(rep("\n", titleLines - n), newTitle), collapse = ""))#
+}#
+#
+########## WEIGHT FUNCTION#
+#
+weight <- function(Data, WeightData, variables, trim = TRUE){#
+    require(ebal)#
+    require(plyr)#
+#
+    if(!all(variables %in% names(Data))){#
+        stopMessage <- paste0("Dataset does not contain the following variables:\n ", variables[which(!variables %in% names(Data))])#
+        stop(stopMessage)#
+    }#
+#
+    if(!all(variables %in% names(WeightData))){#
+        stopMessage <- paste0("Weighting dataset does not contain the following variables:\n ", variables[which(!variables %in% names(WeightData))])#
+        stop(stopMessage)#
+    }#
+#
+    makeBinary <- function(x, removeLast = TRUE){#
+        categories <- unique(na.omit(x))#
+        D <- matrix(ncol = length(categories), nrow = length(x))#
+#
+        for(i in 1:length(categories)){#
+          D[, i] <- as.integer(x == categories[i])#
+        }#
+        invisible(gc())#
+#
+        if(removeLast == FALSE) return(D)#
+        else if(removeLast == TRUE) return(D[, -ncol(D)])#
+    }#
+#
+    Data$treatment <- 0#
+    WeightData$treatment <- 1#
+#
+    missingRows <- which(apply(Data[, which(names(Data) %in% c("treatment", variables))], 1, function(X) any(is.na(X))))#
+    if(length(missingRows > 0)) warning("Missing data in dataset.")#
+#
+    # Dataset which has missing data and cannot be weighted#
+    MissingData <- data.frame()#
+    if(length(missingRows) > 0){#
+      MissingData <- Data[missingRows, ]#
+      Data <- Data[-missingRows, ]#
+    }#
+    Merged <- rbind.fill(Data[, which(names(Data) %in% c("treatment", variables))],#
+                         WeightData[, which(names(WeightData) %in% c("treatment", variables))])#
+#
+    treatment <- as.matrix(Merged$treatment); invisible(gc())#
+#
+    X <- matrix(nrow = nrow(Merged), ncol = 0)#
+    for(i in 1:length(variables)){#
+        X <- cbind(X, makeBinary(Merged[, i], removeLast = TRUE))#
+    }#
+    invisible(gc())#
+    eb.out <- ebalance(Treatment = treatment, X = X)#
+    invisible(gc())#
+    if(trim == TRUE) eb.out <- ebalance.trim(eb.out)#
+#
+    Data$weight <- eb.out$w#
+#
+    if(nrow(MissingData) > 0) Data <- rbind.fill(Data, MissingData)#
+    Data <- Data[, -which(names(Data) == "treatment")]#
+    row.names(Data) <- 1:nrow(Data)#
+    return(Data)#
+#
+}#
+#
+###########
+########## BAR GRAPH (GENERIC)#
+###########
+# Data <- RegionBroadUndecided#
+# yMax = NULL;#
+# colour = RegionBroadColours;#
+# fontsize = 11;#
+# decimal = 0;#
+# scale = 3;#
+# ncol = NA;#
+# sortCategories = FALSE;#
+# title = "";#
+# fill.horiz = "group1"#
+barGraph <- function(Data, yMax = NULL, colour = NULL, fontsize = 11, decimal = 0, scale = 3, ncol = NA, sortCateType = "none", title = "", legend.position = "top", xlabels = NULL){#
+  if(is.null(yMax)){#
+    yMax <- max(Data$value)#
+    yMax <- yMax + (0.16 * yMax)# Add 15% of the max to the y-axis height to leave room for number on top of bar#
+  }#
+  if(is.null(colour)) colour <- c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4", "grey40")#
+#
+  if(!is.factor(Data$group1)) Data$group1 <- factor(Data$group1, levels = unique(Data$group1))#
+  levels(Data$group1) <- paste0(" ", levels(Data$group1), "  ")#
+  if(!is.null(names(colour))) names(colour) <- paste0(" ", names(colour), "  ")#
+  if(is.na(ncol)) ncol <- length(unique(Data$group1))#
+  if(ncol > length(unique(Data$group1))) ncol <- length(unique(Data$group1))#
+#
+  # Sort category1 by a name of each category#
+  if(sortCateType == "order") Data <- Data[with(Data, order(category1)),]#
+  # Sort category1 descendingly by an overall mean value of each category#
+  else if(sortCateType == "value") Data$category1 <- reorder(Data$category1, -Data$value, mean) #Data <- Data[with(Data, order())]#
+#
+  # Formatting the text of value labels for each bar graph by the number of decimal inputted#
+  Data$valueLabel <- sprintf(paste0("%.", decimal, "f"), round(Data$value, decimal))#
+  # xlabels is unspecified#
+  if(is.null(xlabels)){#
+    xbreaks <- unique(as.character(Data$category1))#
+    xlabels <- unique(as.character(Data$category1))#
+  # xlabels is specified as a vector#
+  }else if(is.vector(xlabels)){#
+    if(is.null(names(xlabels))) xbreaks <- unique(as.character(Data$category1))#
+    else xbreaks <- names(xlabels)#
+  # xlabels is specified as a data frame with the 1st column - an origional name of category1, #
+  # the 2nd column - an new name of category1#
+  }else if(is.data.frame(xlabels)){#
+    xbreaks <- as.character(xlabels[,1])#
+    xlabels <- as.character(xlabels[,2])#
+  }#
+#
+  print(ggplot(Data, aes(x = category1, y = value, label = valueLabel, fill = group1, colour = group1)) +#
+          my.theme(base_size = fontsize, borderless = 2,#
+                   background_colour = "transparent", tick_colour = "#A0A4A2") +#
+          coord_cartesian(y = c(0, yMax)) +#
+          scale_y_continuous(breaks = c()) +#
+          scale_x_discrete(breaks = xbreaks, labels = xlabels) +#
+          labs(x = "", y = "", title = title, colour = "", fill = "") +#
+          geom_bar(stat = "identity", fill = "transparent", position = position_dodge(width = 0.85), width = 0.6, size = 0.7, alpha = 1) +#
+          geom_bar(stat = "identity", position = position_dodge(width = 0.87), width = 0.6, size = 0.7, alpha = 0.88) +#
+          geom_text(colour = "grey15", stat = "identity", position = position_dodge(width = 0.85), size = (fontsize/scale), vjust = -0.85) +#
+          geom_hline(yintercept = 0, colour = "#A0A4A2", size = 0.5) +#
+          scale_fill_manual(values = colour) +#
+          scale_colour_manual(values = colour) +#
+          theme(plot.margin = unit(c(0, 0.5, -0.5, -1), "lines"),#
+                legend.position = legend.position) +#
+          guides(fill = guide_legend(ncol = ncol, byrow = TRUE,#
+                 override.aes = list(colour = "transparent")#
+                 ))#
+       )#
+#
+}#
+###########
+########## CREATE GRAPH OF DAILY RESPONDENTS#
+###########
+#
+dailyRespondents <- function(Data, language = "English", electionDay){#
+  if(!"date" %in% names(Data)) stop("date does not exist")#
+  title <- "Number of Users per Day"#
+  electionName <- "Election"#
+  if(language == "French"){#
+    Sys.setlocale(locale="fr_CA.UTF-8")#
+    title <- "Nombre d'utilisateurs"#
+    electionName <- "élections"#
+  }#
+#
+  require(scales)#
+  G <- data.frame(table(Data$date), stringsAsFactors = FALSE)#
+  names(G)[1] <- "date"#
+  names(G)[2] <- "sampleSize"#
+  G$date <- as.Date(as.character(G$date), format = "%Y%m%d")#
+  missingDates <- seq(min(G$date), max(G$date), by = "days")[which(!seq(min(G$date), max(G$date), by = "days") %in% G$date)]#
+  missingDates <- seq(min(G$date), as.Date(as.character(electionDay), "%Y%m%d"), by = "days")#
+  missingDates <- missingDates[!missingDates %in% G$date]#
+#
+  if(length(missingDates) != 0){#
+    G[nrow(G):nrow(G)+length(missingDates), ] <- NA#
+    G$date[(nrow(G)-length(missingDates)+1):nrow(G)] <- missingDates#
+  }#
+#
+  G$sampleSize[is.na(G$sampleSize)] <- 0#
+#
+  G$date <- factor(as.factor(G$date), levels = as.factor(seq(min(G$date, na.rm = TRUE), max(G$date, na.rm = TRUE), by = "days")))#
+  dateNames <- format(as.Date(levels(G$date)), format="%b %d")#
+  dateNames[dateNames == format(as.Date(as.character(electionDay), format = "%Y%m%d"), format="%b %d")] <- electionName#
+#
+  yMax <- ceiling(max(G$sampleSize, na.rm = TRUE)/10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))*(10^(nchar(max(G$sampleSize, na.rm = TRUE))-1))#
+#
+  breakIntervals <- c(100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000)#
+  breaks <- seq(0, yMax, by = breakIntervals[min(which(yMax / breakIntervals < 10))])#
+#
+  breakLabels <- format(breaks, big.mark=",")#
+#
+  if(language == "French") Sys.setlocale(locale="en_CA.UTF-8")#
+#
+  print(#
+    ggplot(G, aes(x = date, y = sampleSize, width = 0.75)) +#
+      my.theme(base_size = 11, borderless = 2, grid.y_colour = "grey90") +#
+      coord_cartesian(y = c(0, yMax)) +#
+      scale_x_discrete(labels = dateNames) +#
+      scale_y_continuous(breaks = breaks, labels = breakLabels) +#
+      labs(x = "", y = "", title = paste(title, "\n\n", sep = "")) +#
+      geom_hline(yintercept = 0, size = 0.5) +#
+      geom_bar(stat = "identity", colour = "black", size = 0.3, fill = "white", drop = TRUE) +#
+      theme(legend.position = "none",#
+            axis.ticks.y = element_line(colour = "transparent", size = 0),#
+            axis.ticks.margin = unit(0.2, "cm"),#
+            plot.margin = unit(c(0.5, 1.25, -0.25, 0.75), "lines"),#
+            axis.text.x = element_text(angle=-45, vjust = 1.1, hjust = 0, size = 9))#
+  )#
+}#
+#
+###########
+########## MAKE DATASET VARIABLES NUMERIC#
+###########
+#
+makeNumeric <- function(X, varNames){#
+  if(any(!varNames %in% names(X))) stop("Not all variables in dataset.")#
+  for(i in 1:length(varNames)){#
+    colNum <- which(names(X) == varNames[i])#
+    X[, colNum] <- as.numeric(X[, colNum])#
+  }#
+  return(X)#
+}#
+#
+###########
+########## CLEAN CATEGORICAL VARIABLES#
+###########
+#
+# varName <- M$incomeRaw#
+# category <- "incomeRaw"#
+#
+# varName <- M$voteChoicePartyLeaningRaw#
+# category <- "voteChoicePartyLeaningRaw"#
+# election <- "NewZealand2014"#
+# directory <- cleanDir#
+#
+cleanCatVar <- function(varName, category, election = "Canada", directory) {#
+  ## This function is designed to clean raw categorical variables with values from a pre-existing, election-specific #
+  ## master list of categories.#
+#
+  ## require(xlsx) package to load .xlsx files by sheet name#
+  require(xlsx)#
+#
+  ## Set working directory to find election match .xlsx file#
+  setwd(directory)#
+#
+  ## Load category list from .xlsx master list data file#
+  pattern <- paste0("^",election, "Match")#
+  fileName <- grep(pattern, list.files(), value = TRUE)#
+  masterListData <- read.xlsx(fileName, sheetName = category, stringsAsFactors = FALSE, header = FALSE, encoding = "UTF-8")#
+#
+  ## Check data to make sure the categories of the variable are a proper subset of masterListData[, 1]#
+  if(!all(varName[!is.na(varName)] %in% masterListData[, 1])) {#
+    print(unique(na.omit(varName[!varName %in% masterListData[, 1]])))#
+    stop("There are categories in the variable that are not in the matching file (SEE ABOVE WARNING MESSAGE)")#
+  }#
+  ## return a vector with the cleaned values that matches the previously uncleaned value order in the variable#
+    return(masterListData[match(varName, masterListData[, 1]), 2])#
+}#
+#
+###########
+########## VOX POP LABS TABLE#
+###########
+#
+vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, label.category = NULL, by.subset = NULL, #
+            type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL){#
+  require(plyr)#
+  require(survey)#
+  DF = data.frame()#
+  if(!is.null(by)) {D = data.frame(x, group1 = by, w = weight, stringsAsFactors = FALSE)#
+  }else{ D = data.frame(x, group1 = "Overall", w = weight, stringsAsFactors = FALSE) }#
+  #default Sort#
+  sortData <- sortData[1]#
+  #default type#
+  type <- type[1]#
+  # if by.subset is a data.frame, convert it to a vector #
+  if(is.data.frame(by.subset)) by.subset <- as.vector(t(by.subset)) #
+  # label.x is a vector #
+  if(is.vector(label.x)){#
+    if(length(label.x) != (ncol(D) -2)) {#
+      stop("The length of labels.x does not match the number of variables.")#
+    }#
+    if(length(names(label.x)) > 0) { #
+      label.x <- data.frame(variable = names(label.x), category1 = label.x) #
+    }else{#
+      label.x <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.x)#
+    }#
+  }#
+#
+  if(is.data.frame(label.x)) names(label.x) <- c("variable", paste0("category", 1:(ncol(label.x) - 1)))#
+    # label.by is a vector #
+  if(is.vector(label.by)){#
+    if(length(names(label.by)) > 0) { #
+      label.by <- data.frame( group1 = names(label.by), group1Labels = label.by) #
+    }else{#
+      label.by <- data.frame(variable = names(D)[1:(ncol(D)-2)], category1 = label.by)#
+    }#
+  }#
+#
+  if(is.data.frame(label.by)) names(label.by) <- c("group1", "group1Labels")#
+#
+  if( !is.null(by.subset) ) D <- subset(D, group1 %in% by.subset)#
+#
+  if(is.numeric(D[,1])){#
+    DF <- ddply(D, .(group1), function(X){ colwise(weighted.mean, names(X)[1:(ncol(X)-2)]) (X, na.rm = TRUE, w = X$w) })#
+    DF <- melt(DF, id.vars = "group1", strinsAsFactors = FALSE)#
+  }else{#
+    Table <- svydesign(id = ~0, weights = ~ D$w, data = D)#
+    for(i in 1: (ncol(D) - 2)){#
+      variableOfInterest <- as.formula(paste0("~", names(D)[i], "+ group1"))#
+      sum.by <- 2#
+      if(type == "within") sum.by = 1#
+      SingleQuestion <-   melt(prop.table(svytable(variableOfInterest, design = Table, Ntot = 100), sum.by), stringsAsFactors = FALSE)#
+      SingleQuestion$value <- SingleQuestion$value * 100#
+      names(SingleQuestion)[1] <- "category1"#
+      SingleQuestion$variable <- names(D)[i]#
+      DF <- rbind.fill(DF, SingleQuestion)#
+    }#
+    if( !is.null(label.x) ) names(label.x) <- c("variable", "variableRename")#
+  }#
+  if( !is.null(label.x) ) DF <- merge(DF, label.x, by = "variable", all = FALSE)#
+  if( !is.null(label.by) ) DF <- merge(DF, label.by, by = "group1", all = FALSE)#
+  if(!is.null(label.category)) { #
+    names(DF)[names(DF) == "category1"] <- "category1Old"#
+    names(label.category) <- c("variable", "category1Old", paste0("category", 1:(ncol(label.category) -2)))#
+    DF <- merge(DF, label.category, by = c("variable","category1Old"), all = FALSE)#
+  }#
+  if(is.null(DF$category1)) DF$category1 <- DF$variable #
+  if(sortData == "alphabet"){#
+    DF$category1 <- as.character(DF$category1)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }else if(sortData == "rank"){#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"value"]),])#
+  }else if(sortData == "manual"){#
+    DF$category1 <- factor(DF$category1, levels = categoryOrder)#
+    DF <- ddply(DF, .(variable,group1), function(X) X[order(X[,"category1"]),])#
+  }#
+#
+  if(!is.null(label.category)) {#
+    for(i in 3:ncol(label.category)){#
+      var <- paste0("category", (i-2))#
+      DF[, var] <- factor(DF[,var], levels = unique(label.category[,i]))  #
+    }#
+  }#
+  if( !is.null(label.category) ) DF$category1Old <- factor(DF$category1Old, levels = sort(unique(DF$category1Old)))#
+  if( !is.null(by.subset) ) DF$group1 <- factor(DF$group1, levels = by.subset)#
+  DF <- DF[, sort(names(DF))]#
+#
+  return(DF)#
+}
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}#
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")#
+#
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  (1|riding) + (1|region)"#
+#
+# model.formula <- " ~ weightAntiEstablishmentLeft + weightFaithAndFamilyRight + weightHeritageRight + weightLaissezFaireLeft + #
+#                     weightLibertarianRight + weightPostMaterialistLeft + weightSocialDemocraticLeft + weightGender1 + weightPetition1 + #
+#                     (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"#
+#
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}#
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")#
+#
+model.questions <- list()#
+model.formula <- " ~ weightGender1 + weightPetition1 + #
+                    (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  (1|riding) + (1|region)"#
+#
+# model.formula <- " ~ weightAntiEstablishmentLeft + weightFaithAndFamilyRight + weightHeritageRight + weightLaissezFaireLeft + #
+#                     weightLibertarianRight + weightPostMaterialistLeft + weightSocialDemocraticLeft + weightGender1 + weightPetition1 + #
+#                     (1|weightAgeGroup2) + (1|weightEducation1) + (1|weightMotherTongue1) + (1|weightOccupation1) + (1|weightReligion1) +  + (1|riding) + (1|region)"#
+#
+n <- 8#
+# i <- 8#
+for(i in 1:n){#
+    cat(c(n - i + 1, ""))#
+#
+    questionFormula <- as.formula(paste0("weight",clusterNames[i], model.formula))#
+#
+    model.questions[i] <- glmer(questionFormula, data = Complete, family = binomial(link = "logit"))#
+}
+model.questions <- list()
+clusterNames <- c("PostMaterialistLeft", "LibertarianRight", "AntiEstablishmentLeft", "SocialDemocraticLeft", "LaissezFaireLeft", #
+ "FaithAndFamilyRight", "HeritageRight", "SteadfastRight")
+for(i in 1:n){#
+  cat(paste(i, ""))#
+  varName <- clusterNames[i]#
+  if(!varName %in% names(W)){#
+    W[, ncol(W)+1] <- as.numeric(NA)#
+    names(W)[ncol(W)] <- varName#
+  }#
+  colNum <- which(names(W) == varName)#
+  W[, colNum] <- invlogit(#
+                 (fixef(model.questions[[i]])["(Intercept)"]) +#
+                 # (fixef(model.questions[[i]])["weightAntiEstablishmentLeft"] * W$weightAntiEstablishmentLeft) +#
+                 # (fixef(model.questions[[i]])["weightFaithAndFamilyRight"] * W$weightFaithAndFamilyRight) +#
+                 # (fixef(model.questions[[i]])["weightHeritageRight"] * W$weightHeritageRight) +#
+                 # (fixef(model.questions[[i]])["weightLaissezFaireLeft"] * W$weightLaissezFaireLeft) +#
+                 # (fixef(model.questions[[i]])["weightLibertarianRight"] * W$weightLibertarianRight) +#
+                 # (fixef(model.questions[[i]])["weightPostMaterialistLeft"] * W$weightPostMaterialistLeft) +#
+                 # (fixef(model.questions[[i]])["weightSocialDemocraticLeft"] * W$weightSocialDemocraticLeft) +#
+                 # (fixef(model.questions[[i]])["weightSteadfastRight"] * W$weightAntiEstablishmentLeft) +#
+                 (fixef(model.questions[[i]])["weightGender1Women"] * as.numeric(W$weightGender1 == "Women")) +#
+                 (fixef(model.questions[[i]])["weightPetition1Signed a petition"] * as.numeric(W$weightPetition1 == "Signed a petition")) +#
+                 ranef(model.questions[[i]])$weightAgeGroup2[W$weightAgeGroup2, 1] +#
+                 ranef(model.questions[[i]])$weightEducation1[W$weightEducation1, 1] +#
+                 ranef(model.questions[[i]])$weightMotherTongue1[W$weightMotherTongue1, 1] +#
+                 ranef(model.questions[[i]])$weightOccupation1[W$weightOccupation1, 1] +#
+                 ranef(model.questions[[i]])$weightReligion1[W$weightReligion1, 1] +#
+                 ranef(model.questions[[i]])$riding[W$riding, 1] +#
+                 ranef(model.questions[[i]])$region[W$region, 1])#
+#
+  invisible(gc())#
+#
+}
+W$weightAntiEstablishmentLeft <- (4/12.8586023) ## Anti-establishment Left #
+W$weightFaithAndFamilyRight <- (21/9.6502856) ## Faith and Family Right  #
+W$weightHeritageRight <- (15/6.7748248) ## Heritage Right           #
+W$weightLaissezFaireLeft <- (18/14.6958840) ## Laissez-Faire Left      #
+W$weightLibertarianRight <- (11/5.1941858) ## Libertarian Right        #
+W$weightPostMaterialistLeft <- (2/14.8900971) ## Post-materialist Left   #
+W$weightSocialDemocraticLeft <- (25/38.6948651) ## Social Democratic Left  #
+W$weightSteadfastRight <- (5/0.7830056) ## Steadfast Right
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}
+paste0("weight",clusterNames[i])
+w <- c("AntiEstablishmentLeft" = (4/12.8586023),#
+"FaithAndFamilyRight" = (21/9.6502856),#
+"HeritageRight" = (15/6.7748248),#
+"LaissezFaireLeft" = (18/14.6958840),#
+"LibertarianRight" = (11/5.1941858),#
+"PostMaterialistLeft" = (2/14.8900971),#
+"SocialDemocraticLeft" = (25/38.6948651),#
+"SteadfastRight" = (5/0.7830056))
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG$weightedValue <- GG$value*GG$w
+GG <- GG[order(GG$group1),]#
+ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))#
+GG$ridingTotal <- rep(ridingTotal$V1, each = 8)#
+GG$estimatedProp <- GG$value/GG$ridingTotal
+GG$weightedValue <- GG$value*(GG$w/sum(GG$w))
+GG$ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))
+GG
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*GG$w#
+GG <- GG[order(GG$group1),]
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w/sum(GG$w))
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w)
+GG <- data.frame()#
+#
+# i <- 1#
+for(i in 1:n){#
+G <- vplTable(W[, clusterNames[i]], W$riding) #
+G$category1 <- clusterNames[i]#
+GG <- rbind(G, GG)#
+}#
+#
+# GG <- GG[order(GG$group1),]#
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]#
+#
+GG$weightedValue <- GG$value*(GG$w)#
+GG <- GG[order(GG$group1),]#
+ridingTotal <- ddply(GG, .(group1), function(Data) sum(Data$weightedValue))#
+GG$ridingTotal <- rep(ridingTotal$V1, each = 8)
+w <- c(#
+"AntiEstablishmentLeft" = (4),#
+"FaithAndFamilyRight" = (21),#
+"HeritageRight" = (15),#
+"LaissezFaireLeft" = (18),#
+"LibertarianRight" = (11),#
+"PostMaterialistLeft" = (2),#
+"SocialDemocraticLeft" = (25),#
+"SteadfastRight" = (5))
+GG$w <- w[rep(rev(names(w)[match(clusterNames, names(w))]), each = 44)]
+GG$weightedValue <- (GG$w)/GG$value
+GG$weightedValue <- (GG$w)/(GG$value*100)
+library(mi)
+data(CHAIN)
+CHAIN
+missing.pattern.plot(CHAIN, gray.scale = TRUE)
+mp.plot(CHAIN, gray.scale = TRUE)
+mp.plot(CHAIN, y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
+info <- mi.info(CHAIN)
+info
+library(CBPS)#
+library(Amelia)#
+library(plyr)#
+library(snow)#
+library(doSNOW)#
+library(doParallel)#
+library(survey)#
+#
+M$numSocioDemos <- apply(with(M, data.frame(voteChoice,#
+                                            previousVote,#
+                                            gender,#
+                                            ageGroup,#
+                                            education,#
+                                            student,#
+                                            industry,#
+                                            religion,#
+                                            religiousImportance,#
+                                            income,#
+                                            selfPlacement,#
+                                            birthplaceRaw,#
+                                            polInterest,#
+                                            polConsumption,#
+                                            polActivitiesRaw#
+                                            # issueMostImportanceRaw#
+                                            )), 1, function(X) sum(!is.na(X)))
+mp.plot(C[, noms], y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
+library(mi)
+?mi
+data(CHAIN)
+info <- mi.info(CHAIN)
+info
+info[["haartadhere.W1"]]$params
+info[["h39b.W1"]]
+3*20*49
+# Continuous#
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            "region",#
+            "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:14))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")
+library(mi)
+data(CHAIN)
+CHAIN.info <- mi.info(CHAIN)
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("haartadhere.W1" = 25))
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("haartadhere.W1" = "25"))
+CHAIN.info
+CHAIN.info <- update(CHAIN.info, "number.mis", list("type" = "unordered-categorical"))
+CHAIN.info <- update(CHAIN.info, "type", list("haartadhere.W1" = "unordered-categorical"))
+CHAIN.info
+names(CHAIN.info)
+slotNames(CHAIN.info)
+typecast(CHAIN.info)
+str(CHAIN.info)
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            # "region",#
+            # "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:13))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")#
+#
+CompleteList <- list()#
+#
+ToImpute <- C[, c(noms, continuous, sqrts, ords)]
+# Continuous#
+continuous <- c("age")#
+#
+# Nominal#
+noms <-   c(#
+            paste0("q", 1:30, "WithDk"),#
+            # "region",#
+            # "voteChoice",#
+            "previousVote",#
+            # "undecidedLower",#
+            # "undecidedUpper",#
+            "gender",#
+            "education",#
+            "religion",#
+            "religiousImportance",#
+            "student",#
+            "paperPetition",#
+            "internetPetition",#
+            "demonstration",#
+            "unionMember",#
+            "volunteer",#
+            "boycott",#
+            "polInterest",#
+            "polConsumption",#
+            "income",#
+            "immigrant",#
+            "industry"#
+            # "issueMostImportanceRaw"#
+            )#
+#
+# Squareroot (if <= 0)#
+sqrts <-  c(paste0("leader", 1:4, "A"),#
+            paste0("leader", 1:4, "B"),#
+            paste0("party", 1:4, "A"),#
+            paste0("party", 1:4, "B"),            #
+            paste0("s", 1:13))#
+#
+# Logarithm#
+logs <-   c()#
+#
+# Logistic (for proportions to keep between 0 and 1)#
+lgstc <-  c()#
+#
+# Ordinal (keeps discrete like nominal)#
+ords <- c("selfPlacement")
+ToImpute <- C[, c(noms, continuous, sqrts, ords)]
+c(noms, continuous, sqrts, ords)
+c(noms, continuous, sqrts, ords) %in% names(C)
+M$numSocioDemos <- apply(with(M, data.frame(voteChoice,#
+                                            previousVote,#
+                                            gender,#
+                                            ageGroup,#
+                                            education,#
+                                            student,#
+                                            industry,#
+                                            religion,#
+                                            religiousImportance,#
+                                            income,#
+                                            selfPlacement,#
+                                            birthplaceRaw,#
+                                            polInterest,#
+                                            polConsumption,#
+                                            polActivitiesRaw#
+                                            # issueMostImportanceRaw#
+                                            )), 1, function(X) sum(!is.na(X)))#
+#
+# M$numSocioDemos <- M$numSocioDemos + M$completedActivities#
+#
+# C <- subset(M, Mobile != 1)#
+C <- M#
+#
+table(C$dayFromElection)#
+#
+C <- subset(C, numSocioDemos >= 7 & dayFromElection %in% -17:-16)#
+# C <- subset(C, dayFrom Election %in% -17:-16)#
+nrow(C)#
+#
+C$previousVote[C$previousVote == "Do not remember"] <- NA
+library(mi)
+?mi
+f <- function(x) x^2
+f
+formals(f)
+body(F)
+body(f)
+environment(f)
+attributes(f)
+body(sum)
+attributes(sum)
+sum
+VCNZ <- read.csv("/Users/uyen/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/VCForAcademicTeam.csv", stringsAsFactors = FALSE)
+nrow(VCNZ)
+names(VCNZ)
+grep("session", names(VCNZ), value = TRUE)
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)
+nrow(PES)
+names(PES)
+head(PES$responseID)
+head(PES$ResponseID)
+head(PES$RecipientEmail)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014Clean.csv", stringsAsFactors = FALSE)
+nrow(NZ)
+questions <- PES[1, ]#
+PES <- PES[-1,]
+cbind(t(questions))
+head(PES$ResponseID)
+names(NZ)
+head(session_id)
+head(NZ$session_id)
+head(PES$ResponseSet)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014EmailData.csv", stringsAsFactors = FALSE)
+table(!is.na(NZ$email))
+table(!is.na(NZ$Email))
+sum(table(!is.na(NZ$email)))
+sum(table(!is.na(NZ$Email)))
+names(PES)
+PES[1,]
+questions <- PES[1, ]#
+PES <- PES[-1,]
+PES[1,]
+table(is.na(PES$RecipientEmail))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]
+dim(PES)
+PES2 <- PES[-1,]
+nrow(PES@)
+nrow(PES2)
+head(PES)
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE, skips = c(2,3))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE, skip = c(2,3))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]
+head(PES2)
+VCNZPES <- merge(NZ, PES, by.x = "email", by.y = "RecipientEmail", all = TRUE)
+head(VCNZPES)
+nrow(VCNZPES)
+PES2$ExternalReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalReference))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]#
+PES2$ExternalDataReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference))
+PES <- read.csv("~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES.csv", stringsAsFactors = FALSE)#
+questions <- PES[1, ]#
+PES2 <- PES[-(1:3),]
+head(as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference)))
+PES2 <- subset(PES2, ExternalDataReference != "Test")
+nrow(PES2)
+PES2$ExternalDataReference <- as.numeric(gsub("NewZealand2014_","", PES2$ExternalDataReference))
+nrow(PES)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014EmailData.csv", stringsAsFactors = FALSE)
+VCNZPES <- merge(NZ, PES, by.x = "session_id", by.y = "ExternalDataReference", all = FALSE)
+head(VCNZPES)
+head(NZ$session_id)
+NZ <- read.csv("~/Dropbox (Vox Pop Labs)/Data/VoteCompass/NewZealand2014/NewZealand2014Clean.csv", stringsAsFactors = FALSE)
+head(NZ)
+head(NZ$session_id)
+head(PES2$ExternalDataReference)
+VCNZPES <- merge(NZ, PES2, by.x = "session_id", by.y = "ExternalDataReference", all = FALSE)
+nrow(VCNZPES)
+head(VCNZPES)
+cbind(names(VCNZPES))
+head(VCNZPES$Status)
+head(VCNZPES$Optin)
+write.csv(VCNZPES[, -c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail",                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+write.csv(VCNZPES[, -c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+write.csv(VCNZPES[, !names(VCNZPES) %in% c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)], "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+nrow(VCNZPES)
+W <- VCNZPES[, !names(VCNZPES) %in% c("email", #
+"Email", #
+"ip_address",#
+"twitterID",#
+"ResponseID",                       #
+"ResponseSet",                      #
+"IPAddress",                        #
+# "StartDate",                        #
+# "EndDate",                          #
+"RecipientLastName",                #
+"RecipientFirstName",               #
+"RecipientEmail"                   #
+# "Finished",                         #
+# "Status"     #
+)]
+dim(W)
+dim(VCNZPES)
+names(VCNZPES)[!names(VCNZPES) %in% names(W)]
+cbind(names(W))
+W2 <- W[, c(1:148,278:706)]#
+#
+write.csv( W2, "~/Dropbox (Vox Pop Labs)/Data/Panel/NewZealandPES2014/New_Zealand_2014_PES_ForAcademics.csv", row.names = FALSE)
+nrow(W2)
+dim(W2)
+names(W2)
+t(questions)
+nrow(Weighted)
+library(pplpredict)
+data(Queensland)
+head(Queensland)
+?vplTable
+?peoplePrediction
+rm(list = ls())
+remove.packages("pplpredict")
+installed.packages()
+library(devtools)
+devtools::install_github("uyenhoang/pplpredict")
+data(Queensland)
+head(Queensland)
+peoplePrediction(Queensland, paste0("party", 1:4,"B"), c("Labor", "Greens","LibNat","Katter"))
+library(pplpredict)
+data(Queensland)
+head(Queensland)
+pplpredict(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
+peoplePrediction(Queensland, paste0("party",1:4, "B"), c("Labor","Greens","LibNat","Katter"))
+?peoplePredcition
+?peoplePrediction
+?maxWrapper
+??maxWrapper
+?pplpredict
+??pplpredict
+?RCIMeasure
+??RCIMeasure
+?maxWrapper
+??maxWrapper
+library(pplpredict)
+?maxWrapper
+?rescaleWrapper
+?peoplePrediction
+library(devtools)
+install_github("uyenhoang/pplpredict")
+?pplpredict
+data(Queensland)
+library(pplpredict)
+data(Queensland)
+?pplpredict
+?rci
+?cleanData
+?rci
+RCIMeasure(c(1, 10, 3), c("Labor","Greens","LibNat"))
+apply(Queensland, 1, RCIMeasure[,paste0("party", 1:4, "B")], partyNames = c(c("Labor","Greens","LibNat","Katter")) )
+apply(Queensland[,paste0("party", 1:4, "B"], 1, RCIMeasure, partyNames = c(c("Labor","Greens","LibNat","Katter")) )
+apply(Queensland[,paste0("party", 1:4, "B")], 1, RCIMeasure, partyNames = c(c("Labor","Greens","LibNat","Katter")) )
+D <- .Last.value
+data.frame(do.call(rbind, lapply(D,unlist)), stringsAsFactors = FALSE)
+?rescaleWrapper
+rescaleWrapper(c(1, 2, 3), range = c(0,1))
+rescaleWrapper
+peoplePredict
+peoplePrediction
+vplTable
+peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"), transform = TRUE)
+peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"), transform = FALSE)
+getwd()
+setwd("~/Desktop/pplpredict")
+setwd("~/Desktop/R Packages/pplpredict")
+getwd()
+peoplePrediction
+names(Queensland)
+head(Queensland[, "q1dt"])
+Queensland[1:100, "q1dt"]
+rm(list = ls())
+library(devtools)
+library(roxygen2)
+document()
+document()
+document()
+install()
+install_github("pplpredict")
+rm(list = ls())
+lbirary(devtools)
+library(devtools)
+install_github("pplpredict")
+install_github("uyenhoang/pplpredict")
+library(pplpredict)
+data(Queensland)
+nrow(Queensland)
+setwd("..")
+getwd()
+list.files()
+setwd("./pplpredict/data")
+list.files()

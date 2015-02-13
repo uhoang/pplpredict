@@ -6,22 +6,28 @@
 \alias{pplpredict}
 \title{Calulate a people Prediction at electorate levels using relative confidence index}
 \usage{
-peoplePrediction(Data, rci.vars, partyNames = NULL, transform = TRUE, ...)
+peoplePrediction(Data, rci.vars, partyNames = NULL, transform = FALSE, ...)
 }
 \arguments{
-\item{Data}{A data frame of VoteCompass datasets}
+\item{Data}{a data frame of VoteCompass datasets}
 
-\item{rci.vars}{A character vector or a numeric vector of index of variable names of the winning ratings for each party.}
+\item{rci.vars}{a character vector or a numeric vector of index of variable names of the winning ratings for each party.}
 
-\item{partyNames}{A character vector of full names for each party.}
+\item{partyNames}{a character vector of full names for each party.}
 
-\item{transfrom}{A logical scalar to indicate if RCI variables are needed to rescale. Its default is TRUE.}
+\item{...}{other arguments passed to \code{rescaleWrapper} when \code{transfrom} is set to TRUE}
+
+\item{transfrom}{a logical scalar to indicate if RCI variables are needed to rescale. Its default is FALSE.}
+}
+\value{
+a data frame of aggregated relative confidence index for each party by electorates/ridings, the winner and the secondplace runner by RCI.
 }
 \description{
 Calulate a people Prediction at electorate levels using relative confidence index
 }
 \examples{
 peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
+peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"), transform = TRUE)
 peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
 }
 

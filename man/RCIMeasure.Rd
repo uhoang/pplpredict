@@ -4,17 +4,20 @@
 \alias{RCI}
 \alias{RCIMeasure}
 \alias{rci}
-\title{Calcualte a relative confidence indexn between a winner and other candidates.}
+\title{Calcualte a relative confidence index between a winner and other candidates.}
 \usage{
 RCIMeasure(x, partyNames = NULL)
 }
 \arguments{
-\item{x}{A numerical vector of the winning ratings for each party.}
+\item{x}{a numerical vector of the winning ratings for each party.}
 
-\item{partyNames}{A character vector of party names in the election race.}
+\item{partyNames}{a character vector of party names in the election race.}
+}
+\value{
+a vector of relative confidence indexes by each party.
 }
 \description{
-Calcualte a relative confidence indexn between a winner and other candidates.
+Calcualte a relative confidence index between a winner and other candidates.
 }
 \examples{
 RCIMeasure(c(1, 10, 3))

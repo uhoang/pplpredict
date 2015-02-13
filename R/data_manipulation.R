@@ -1,3 +1,46 @@
+#' Queensland VoteCompass.
+#'
+#' A dataset containing the responses to 30 VoteCompass public opinion questions and other demographics of almost 5,000 
+#' VoteCompass users.
+#'
+#' @format A data frame with 5000 rows and 166 variables:
+#' \describe{
+#'   \item{q1}{How much should Queensland spend to help drought-affected farmers?}
+#'   \item{q2}{Queensland should pay down its debt by leasing public assets.}
+#'   \item{q3}{Teachers' salaries should be tied to student outcomes, rather than seniority.}
+#'   \item{q4}{Religion has no place in state schools.}
+#'   \item{q5}{How much should Queensland do to reduce its greenhouse gas emissions?}
+#'   \item{q6}{Environmental protections are an obstacle to economic growth.}
+#'   \item{q7}{When there is an economic problem, government spending usually makes it worse.}
+#'   \item{q8}{How much of Queensland's public hospital service should be contracted to the private sector?}
+#'   \item{q9}{The government should pay for surgery in a private hospital if wait times in public hospitals are too long.}
+#'   \item{q10}{How many temporary foreign workers should Queensland admit?}
+#'   \item{q11}{How much should the government do to help Aborigines and Torres Strait Islanders find employment?}
+#'   \item{q12}{Indigenous Queenslanders should be able to set their own alcohol laws.}
+#'   \item{q13}{How tough should penalties be for domestic violence be in Queensland?}
+#'   \item{q14}{A member of a bikie gang should receive a tougher sentence than someone else convicted of the same crime.}
+#'   \item{q15}{How strict should Queensland's anti-bikie laws be?}
+#'   \item{q16}{Clubs and bars should not be allowed to sell alcohol after midnight.}
+#'   \item{q17}{How many frontline police officers does Queensland need?}
+#'   \item{q18}{Marijuana should be legal when used for medicinal purposes.}
+#'   \item{q19}{Terminally ill patients should be able to legally end their own lives with medical assistance.}
+#'   \item{q20}{Same-sex couples should have the right to adopt children.}
+#'   \item{q21}{How much should be done to accommodate religious minorities in Queensland?}
+#'   \item{q22}{All immigrants can retain their cultural values without being any less Australian.}
+#'   \item{q23}{How much mining activity should be permitted in the waters around the Great Barrier Reef?}
+#'   \item{q24}{Landowners should be able to prevent mining companies from operating on their property.}
+#'   \item{q25}{How many government workers should Queensland employ?}
+#'   \item{q26}{How much should Queenslanders pay in state taxes?}
+#'   \item{q27}{Rural and regional areas should offer the same government services as cities, even if it means higher taxes for everyone.}
+#'   \item{q28}{Queensland should reduce its debt by cutting services rather than raising taxes.}
+#'   \item{q29}{Traffic congestion in Queensland is best resolved by investing in roads, not in public transport.}
+#'   \item{q30}{How much influence should unions have in Queensland?}
+#'   ...
+#' }
+#' @source \url{http://www.queensland.votecompass.com/}
+"QueenslandRaw"
+
+
 #' Recategorize a character or numerical vector.
 #' @aliases recategorize recate 
 #'
@@ -30,8 +73,8 @@ recategorize <- function(x, x.new, labels = NA){
 							 ". These values are replaced by missing values.")
 		warning(msg)
 	}
-	if(any(is.na(labels))) labels <- paste0("X",1:ncol(new.names))
-	D <- data.frame(new.names[x, ], stringsAsFactors = FALSE)
+	if( any(is.na(labels)) ) labels <- paste0("X",1:ncol(new.names))
+	D <- data.frame(new.names[as.character(x), ], stringsAsFactors = FALSE)
 	names(D) <- labels
 	D
 }
@@ -41,33 +84,69 @@ recategorize <- function(x, x.new, labels = NA){
 #'
 #' @param Data data frame to be processed.
 #' @param varsClean a character vector of variables to be regrouped.
-#' @param matchFileName a character string naming a match file.
+#' @param matchFileName a character string naming a match file. The match file is an excel file with one or multiple sheets. 
+#' 		  Sheetname must be corresponding to variable names in \code{varsClean}. 
+#' 		  Each sheet must contain the original value of the variable in the 1st column, and their 
+#' 		  new values in those next columns. If the sheetname is \code{"varNames"}, rename the vairables of the dataset given in the sheet.
 #' @param ... other arguments passed on to \code{read.xlsx} for reading the match file.
 #' @return a data frame of regrouped variables.
 #' @examples
-#' cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")
-#' cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "QueenslandMatch.xlsx")
+#' data(QueenslandRaw)
+#' 
+#' matchFileName <- system.file("extdata","QueenslandMatch.xlsx", package = "pplpredict")
+#' # View the first six lines of the sheet varNames in "QueenslandMatch.xlsx"
+#' head(xlsx::read.xlsx(matchFileName, sheetName = "varNames", stringsAsFactors = FALSE, header = FALSE))
+#'
+#' cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), matchFileName)
+#' cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), matchFileName)
+#'
+#' # Rename variables in a dataset
+#' cleanData(QueenslandRaw, "varNames", matchFileName)
+#' 
+#' varsClean <- c("varNames","genderRaw","educationRaw","studentRaw","birthYearRaw","industryRaw",
+#'				"polInterestRaw","polConsumptionRaw","religionRaw","selfPlacementRaw","birthplaceRaw",
+#'				"incomeRaw","voteChoiceRaw","voteChoiceLeaningRaw")
+#' cleanData(QueenslandRaw, varsClean, "QueenslandMatch.xlsx") 
 cleanData <- function(Data, varsClean, matchFileName, ...){
 
 	if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { 
 		stop(paste0(matchFileName, " does not exist."))
 	}else{ 
 		if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") 
-		if(varClean == "codeBook"){
-			if(!"header" %in% names(args)) header = FALSE
-			matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
-			names(Data[,matchFile[,1]]) <- recategorize(matchFile[,1], matchFile) 
-		}
+		if(any(varsClean == "varNames")){
+			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = "varNames", stringsAsFactors = FALSE, header = FALSE)
+			matchData <- Data[, matchFile[,1]]
+			names(matchData) <- as.character(recategorize(matchFile[,1], matchFile)[,1])
+			Data <- data.frame(Data[, !names(Data) %in% matchFile[,1]], matchData)
+		} 
+		varsClean <- varsClean[varsClean != "varNames"]
 		for(i in 1:length(varsClean)){
-			args <- match.call()
-			if(!"header" %in% names(args)) header = FALSE
-			matchFile <- xlsx::read.xlsx2(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = header)
+			cat("Cleaning", varsClean[i], "\n")
+			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = FALSE)
+			matchFile <- matchFile[!duplicated(matchFile[,1]),]
 			Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))
 		}
+		
+		
 	}
-	Data
+	return(Data)
 }
 
+#' Make indicator variables for each levels in a categorical variable.
+#'
+#' @param x a character vector of a categorical variable.
+#' @param levels a character vector of unique levels in \code{x}.
+#' @return a data frame of indicator variables of each level in the categorical variable \code{x}.
+#' @examples 
+#' data(Queensland)
+#' makeIndicator(Queensland[,polActivitiesRaw], c("boycot","union","demonstration","internet","paper","volunteer"))
+#' makeIndicator(Queensland[,"previousVoteRaw"], c("Liberal","Greens","Katter","Labor"))
+makeIndicator <- function(x, levels){
+
+	Data <- data.frame( apply( matrix( levels, nrow = 1, byrow = TRUE), 2, function(l) as.numeric( grepl( l, x, ignore.case = TRUE) ) ) )
+	names(Data) <- levels
+	Data
+}
 
 # Data <- QueenslandRaw
 # varsClean <- c("genderRaw","studentRaw","educationRaw")

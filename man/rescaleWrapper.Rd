@@ -11,18 +11,18 @@ rescaleWrapper(x, domain = NULL, range = NULL, bounded = FALSE,
   na.replace = NA)
 }
 \arguments{
-\item{x}{A numeric number or vector.}
+\item{x}{a numeric number or vector.}
 
-\item{domain}{A vector includes minimum and maximum values of the domain of \code{x}.}
+\item{domain}{a vector includes minimum and maximum values of the domain of \code{x}.}
 
-\item{range}{A vector includes minimum and maximum values of the range of \code{x}.}
+\item{range}{a vector includes minimum and maximum values of the range of \code{x}.}
 
-\item{bounded}{A logical scalar. Default is FALSE. The output vector of scaled \code{x} can not less or greater than minimum or maximum value of the range of \code{x}.}
+\item{bounded}{a logical scalar. Default is FALSE. The output vector of scaled \code{x} can not less or greater than minimum or maximum value of the range of \code{x}.}
 
-\item{na.replace}{A numeric or character that missing values is replaced by. \code{na.replace} is missing at default.}
+\item{na.replace}{a numeric or character that missing values is replaced by. \code{na.replace} is missing at default.}
 }
 \value{
-The scaled values of \code{x} in the \code{range} for the given \code{domain}.
+the scaled values of \code{x} in the \code{range} for the given \code{domain}.
 }
 \description{
 \code{rescaleWrapper} returns the vector of rescaled values

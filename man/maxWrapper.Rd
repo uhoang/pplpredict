@@ -9,10 +9,10 @@
 maxWrapper(x)
 }
 \arguments{
-\item{x}{A numeric vector}
+\item{x}{a numeric vector}
 }
 \value{
-A index of a maximum value in \code{x}
+an index of a maximum value in \code{x}
 }
 \description{
 Find an index of a maximum value in a numeric vector.
