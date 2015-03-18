@@ -21,6 +21,6 @@ Calcualte a relative confidence index between a winner and other candidates.
 }
 \examples{
 RCIMeasure(c(1, 10, 3))
-RCIMeasure(c(1, 10, 3), c("Labor","Greens","LibNat"))
+RCIMeasure(c(1, 10, 3), c("Labor", "Greens", "LibNat"))
 }
 

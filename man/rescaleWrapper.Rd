@@ -28,9 +28,9 @@ the scaled values of \code{x} in the \code{range} for the given \code{domain}.
 \code{rescaleWrapper} returns the vector of rescaled values
 }
 \examples{
-rescaleWrapper(c(1, 2, 3), range = c(0,1))
-rescaleWrapper(c(0, 1, NA), range = c(0,1))
-rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0,1), bounded = FALSE, na.replace = NA)
-rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0,1), bounded = TRUE, na.replace = NA)
+rescaleWrapper(c(1, 2, 3), range = c(0, 1))
+rescaleWrapper(c(0, 1, NA), range = c(0, 1))
+rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0, 1), bounded = FALSE, na.replace = NA)
+rescaleWrapper(c(0, 1, 5, -3, NA), domain = c(0, 10), range = c(0, 1), bounded = TRUE, na.replace = NA)
 }
 

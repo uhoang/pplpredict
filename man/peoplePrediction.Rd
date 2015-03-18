@@ -26,8 +26,8 @@ a data frame of aggregated relative confidence index for each party by electorat
 Calulate a people Prediction at electorate levels using relative confidence index
 }
 \examples{
-peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"))
-peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor","Greens","LibNat","Katter"), transform = TRUE)
-peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor","Greens","LibNat"))
+peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor", "Greens", "LibNat", "Katter"))
+peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor ","Greens" ,"LibNat", "Katter"), transform = TRUE)
+peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor", "Greens", "LibNat"))
 }
 

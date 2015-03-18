@@ -52,28 +52,27 @@
 #' recategorize(c(1,2,5,3,4), c("1" = 1, "2" = 1, "3" = 0))
 #' recategorize(c(1,2,3), cbind(c(1,2,3), c(1,1,0), c(1,-1,0)))
 #' recategorize(c(1,4,2,5,3,NA), data.frame(c(1,2,3), c(1,1,0), c(1, -1, 0)) )
-recategorize <- function(x, x.new, labels = NA){
+recategorize <- function(x, x.new, labels = NA) {
 
-	if(is.vector(x.new)){
-		if(is.null(names(x.new))) stop("Each new value in x.new must be corresponding to a value in the original x.")
-		new.names <- as.matrix(x.new)
+	if (is.vector(x.new)) {
+		if (is.null(names(x.new)) ) stop("Each new value in x.new must be corresponding to a value in the original x.")
+		new.names <- data.frame(x.new, stringsAsFactors = FALSE)
 		rownames(new.names) <- names(x.new) 
-	}else if(!is.matrix(x.new) & !is.data.frame(x.new) ){ 
+	} else if (!is.matrix(x.new) & !is.data.frame(x.new)) { 
 		stop("The type of x.new is not correct. x.new must be a vector, a matrix or a data.frame, 
 			 where the 1st column is the original value of x and the 2nd is the new value of x.")
-	}else{
-		new.names <- data.frame(x.new[,-1])
-		rownames(new.names) <- x.new[,1]
-		x.new <- new.names
+	} else {
+		new.names <- data.frame(x.new[ ,-1], stringsAsFactors = FALSE)
+		rownames(new.names) <- x.new[ ,1]
 	} 
 	uniqueVals <- unique(x[!is.na(x)])
-	if(any(!uniqueVals %in% rownames(new.names)) ) {
+	if (any(!uniqueVals %in% rownames(new.names)) ) {
 		x[x %in% uniqueVals[!uniqueVals %in% rownames(new.names)]] <- NA
-		msg <- paste0("A list of unique values of x does not contain ",paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), 
-							 ". These values are replaced by missing values.")
+		msg <- paste0("A list of unique values of x does not contain ", paste0(uniqueVals[!uniqueVals %in% rownames(new.names)], collapse = ", "), 
+					  ". These values are replaced by missing values.")
 		warning(msg)
 	}
-	if( any(is.na(labels)) ) labels <- paste0("X",1:ncol(new.names))
+	if (any(is.na(labels))) labels <- paste0("X", 1:ncol(new.names))
 	D <- data.frame(new.names[as.character(x), ], stringsAsFactors = FALSE)
 	names(D) <- labels
 	D
@@ -103,34 +102,83 @@ recategorize <- function(x, x.new, labels = NA){
 #' # Rename variables in a dataset
 #' cleanData(QueenslandRaw, "varNames", matchFileName)
 #' 
-#' varsClean <- c("varNames","genderRaw","educationRaw","studentRaw","birthYearRaw","industryRaw",
-#'				"polInterestRaw","polConsumptionRaw","religionRaw","selfPlacementRaw","birthplaceRaw",
-#'				"incomeRaw","voteChoiceRaw","voteChoiceLeaningRaw")
+#' varsClean <- c("varNames", "genderRaw", "educationRaw", "studentRaw", "birthYearRaw", "industryRaw", 
+#'				  "polInterestRaw", "polConsumptionRaw", "religionRaw", "selfPlacementRaw", "birthplaceRaw", 
+#'				  "incomeRaw", "voteChoiceRaw", "voteChoiceLeaningRaw")
 #' cleanData(QueenslandRaw, varsClean, "QueenslandMatch.xlsx") 
-cleanData <- function(Data, varsClean, matchFileName, ...){
+cleanData <- function (Data, varsClean, matchFileName, labels = NULL, trailingSpace = TRUE, na.strings = NULL, ...) {
+    if (!basename(matchFileName) %in% list.files(dirname(matchFileName))) {
+        stop(paste0(matchFileName, " does not exist."))
+    }
+    else {
+        if (!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) 
+            stop("The matchFileName must have a xlsx extension.")
+        if (any(varsClean == "varNames")) {
+            matchFile <- xlsx::read.xlsx(matchFileName, sheetName = "varNames", 
+                stringsAsFactors = FALSE, header = FALSE)
+            if (any(!matchFile[,1] %in% names(Data))) {
+            	msg <- paste0("There are no variables: ", paste0(matchFile[,1][!matchFile[,1] %in% names(Data)], collapse = ", "), 
+            				  " in the dataset. These variables will be removed automatically.")
+            	warning(msg)
+            	matchFile <- matchFile[matchFile[,1] %in% names(Data), ]
+            }
+            matchData <- Data[, matchFile[, 1]]
+            names(matchData) <- as.character(recategorize(matchFile[, 
+                1], matchFile)[, 1])
+            Data <- data.frame(Data[, !names(Data) %in% matchFile[, 
+                1]], matchData)
+        }
+        varsClean <- varsClean[varsClean != "varNames"]
+        if ( length(varsClean) > 0 ) {
+            for (i in 1:length(varsClean)) {
+            cat("Cleaning", varsClean[i], "\n")
+            matchFile <- xlsx::read.xlsx(matchFileName, sheetName = varsClean[i], 
+                stringsAsFactors = FALSE, header = FALSE)
+            if (is.null(matchFile)) stop(paste0("The sheet ", varsClean[i], " in the matchFileName is empty."))
+            matchFile <- matchFile[!duplicated(matchFile[, 1]), ]
+            if (is.null(labels)) { label_i <- gsub("Raw", "", varsClean[i])
+            } else { label_i <- labels[i] }
+            if ((ncol(matchFile) - 1) > 1) { 
+                if (!label_i %in% names(Data)) { label_i <- paste0(label_i, c("", 2:(ncol(matchFile) - 1)))
+                } else { label_i <- paste0(label_i, c(1:(ncol(matchFile) - 1))) }   
+            }
 
-	if(!basename(matchFileName) %in% list.files(dirname(matchFileName))) { 
-		stop(paste0(matchFileName, " does not exist."))
-	}else{ 
-		if(!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") 
-		if(any(varsClean == "varNames")){
-			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = "varNames", stringsAsFactors = FALSE, header = FALSE)
-			matchData <- Data[, matchFile[,1]]
-			names(matchData) <- as.character(recategorize(matchFile[,1], matchFile)[,1])
-			Data <- data.frame(Data[, !names(Data) %in% matchFile[,1]], matchData)
-		} 
-		varsClean <- varsClean[varsClean != "varNames"]
-		for(i in 1:length(varsClean)){
-			cat("Cleaning", varsClean[i], "\n")
-			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = FALSE)
-			matchFile <- matchFile[!duplicated(matchFile[,1]),]
-			Data <- data.frame(Data, recategorize(Data[,varsClean[i]], matchFile, labels = paste0(gsub("Raw","", varsClean[i]),1:(ncol(matchFile)-1))))
-		}
-		
-		
-	}
-	return(Data)
+            var <- Data[ , varsClean[i]]
+            if (trailingSpace & is.character(var)) var <- gsub("^\\s+|\\s+$", "", var)
+            if (!is.null(na.strings)) var[grep(paste0(na.strings,collapse="|"), var)] <- NA
+            Data <- data.frame(Data, recategorize(var, matchFile, labels = label_i))
+            }
+        }
+        
+    }
+    return(Data)
 }
+
+
+# cleanData <- function(Data, varsClean, matchFileName, ...) {
+
+# 	if (!basename(matchFileName) %in% list.files(dirname(matchFileName))) { 
+# 		stop(paste0(matchFileName, " does not exist."))
+# 	} else { 
+# 		if (!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) stop("The matchFileName must have a xlsx extension.") 
+# 		if (any(varsClean == "varNames")) {
+# 			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = "varNames", stringsAsFactors = FALSE, header = FALSE)
+# 			matchData <- Data[ , matchFile[ ,1]]
+# 			names(matchData) <- as.character(recategorize(matchFile[ ,1], matchFile)[ ,1])
+# 			Data <- data.frame(Data[ , !names(Data) %in% matchFile[ ,1]], matchData)
+# 		} 
+# 		varsClean <- varsClean[varsClean != "varNames"]
+# 		for (i in 1:length(varsClean)) {
+# 			cat("Cleaning", varsClean[i], "\n")
+# 			matchFile <- xlsx::read.xlsx(matchFileName, sheetName = varsClean[i], stringsAsFactors = FALSE, header = FALSE)
+# 			matchFile <- matchFile[!duplicated(matchFile[ ,1]), ]
+# 			Data <- data.frame(Data, recategorize(Data[ , varsClean[i]], matchFile, labels = paste0(gsub("Raw", "", varsClean[i]), 1:(ncol(matchFile) - 1))))
+# 		}
+		
+		
+# 	}
+# 	return(Data)
+# }
 
 #' Make indicator variables for each levels in a categorical variable.
 #'
@@ -141,15 +189,9 @@ cleanData <- function(Data, varsClean, matchFileName, ...){
 #' data(Queensland)
 #' makeIndicator(Queensland[,polActivitiesRaw], c("boycot","union","demonstration","internet","paper","volunteer"))
 #' makeIndicator(Queensland[,"previousVoteRaw"], c("Liberal","Greens","Katter","Labor"))
-makeIndicator <- function(x, levels){
+makeIndicator <- function(x, levels) {
 
-	Data <- data.frame( apply( matrix( levels, nrow = 1, byrow = TRUE), 2, function(l) as.numeric( grepl( l, x, ignore.case = TRUE) ) ) )
+	Data <- data.frame(apply(matrix(levels, nrow = 1, byrow = TRUE), 2, function(l) as.numeric(grepl(l, x, ignore.case = TRUE))))
 	names(Data) <- levels
 	Data
 }
-
-# Data <- QueenslandRaw
-# varsClean <- c("genderRaw","studentRaw","educationRaw")
-# matchFileName <- "~/Desktop/R Packages/QueenslandMatch.xlsx"
-# header <- FALSE
-# NewData <- cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), "~/Desktop/R Packages/QueenslandMatch.xlsx")

@@ -39,9 +39,9 @@ cleanData(QueenslandRaw, c("genderRaw","studentRaw","educationRaw"), matchFileNa
 # Rename variables in a dataset
 cleanData(QueenslandRaw, "varNames", matchFileName)
 
-varsClean <- c("varNames","genderRaw","educationRaw","studentRaw","birthYearRaw","industryRaw",
-				"polInterestRaw","polConsumptionRaw","religionRaw","selfPlacementRaw","birthplaceRaw",
-				"incomeRaw","voteChoiceRaw","voteChoiceLeaningRaw")
+varsClean <- c("varNames", "genderRaw", "educationRaw", "studentRaw", "birthYearRaw", "industryRaw",
+				  "polInterestRaw", "polConsumptionRaw", "religionRaw", "selfPlacementRaw", "birthplaceRaw",
+				  "incomeRaw", "voteChoiceRaw", "voteChoiceLeaningRaw")
 cleanData(QueenslandRaw, varsClean, "QueenslandMatch.xlsx")
 }
 
