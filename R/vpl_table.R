@@ -1,5 +1,6 @@
 vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, label.category = NULL, by.subset = NULL, 
-            type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL){
+            type = c("across","within","means"), sortData = c("alphabet","rank","manual"), categoryOrder = NULL,
+            avg = TRUE){
   
   DF = data.frame()
   if(!is.null(by)) {D = data.frame(x, group1 = by, w = weight, stringsAsFactors = FALSE)
@@ -50,9 +51,13 @@ vplTable <- function(x, by = NULL, weight = 1, label.x = NULL, label.by = NULL, 
     for(i in 1: (ncol(D) - 2)){
       variableOfInterest <- as.formula(paste0("~", names(D)[i], "+ group1"))
       sum.by <- 2
-      if(type == "within") sum.by = 1
-      SingleQuestion <-   reshape2::melt(prop.table(survey::svytable(variableOfInterest, design = Table, Ntot = 100), sum.by), stringsAsFactors = FALSE)
-      SingleQuestion$value <- SingleQuestion$value * 100
+      if (type == "within") sum.by = 1
+      if (avg) {
+        SingleQuestion <-   reshape2::melt(prop.table(survey::svytable(variableOfInterest, design = Table, Ntot = 100), sum.by), stringsAsFactors = FALSE)
+        SingleQuestion$value <- SingleQuestion$value * 100
+      } else {
+        SingleQuestion <-   reshape2::melt(survey::svytable(variableOfInterest, design = Table, Ntot = NULL), stringsAsFactors = FALSE)
+      }
       names(SingleQuestion)[1] <- "category1"
       SingleQuestion$variable <- names(D)[i]
       DF <- plyr::rbind.fill(DF, SingleQuestion)

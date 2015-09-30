@@ -206,7 +206,8 @@ barGraph2 <- function(Data, yMax = NULL, colour = NULL, fontsize = 11, decimal =
 
 dotPlot <- function(Data, fontsize = 11, scale = 3, ncol = 3, labels, title = "",
                     legend.title = NULL, legend.title.position = "left", legend.title.hjust = 0, 
-                    legend.position = "top", legend = TRUE, plot.margin.left = 0, colour = NULL) {
+                    legend.position = "top", legend = TRUE, plot.margin.left = 0, plot.margin.top = 0, colour = NULL, 
+                    plot.title.vjust = 0) {
 
   levels(Data$group1) <- paste0(" ", levels(Data$group1), "  ")
   if(length(unique(Data$group1)) < ncol) ncol <- length(unique(Data$group1))
@@ -241,14 +242,17 @@ dotPlot <- function(Data, fontsize = 11, scale = 3, ncol = 3, labels, title = ""
                 legend.text = element_text(size = fontsize, face = "italic"),
                 legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),
                 axis.ticks.length = unit(0, "lines"),
-                plot.margin = unit(c(0, 3, 1, plot.margin.left), "lines")) +
+                plot.margin = unit(c(plot.margin.top, 3, 0, plot.margin.left), "lines"),
+                plot.title = element_text(vjust = plot.title.vjust)) +
           guides 
         )
 }
 
+
 dotPlot2 <- function(Data, fontsize = 11, scale = 3, ncol = 3, labels, title = "",
                     legend.title = NULL, legend.title.position = "left", legend.title.hjust = 0, 
-                    legend.position = "top", legend = TRUE, plot.margin.left = 0) {
+                    legend.position = "top", legend = TRUE, plot.margin.left = 0, plot.margin.top = 0, colour = NULL, 
+                    plot.title.vjust = 0) {
 
   levels(Data$group1) <- paste0(" ", levels(Data$group1), "  ")
   if(length(unique(Data$group1)) < ncol) ncol <- length(unique(Data$group1))
@@ -260,8 +264,9 @@ dotPlot2 <- function(Data, fontsize = 11, scale = 3, ncol = 3, labels, title = "
   } else {
     guides <- guides(fill = FALSE)
   }
+  if (is.null(colour)) colour <- c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4")
 
-  return(ggplot(Data, aes(x = value, y = category1, colour = group1, fill = group1)) +
+  ggplot(Data, aes(x = value, y = category1, colour = group1, fill = group1)) +
           my.theme(base_size = fontsize,          borderless = 2,
                    grid.x_colour = "grey80",      grid.y_colour = "grey80",
                    grid.x_linetype = 1,           grid.y_linetype = 1,
@@ -273,16 +278,20 @@ dotPlot2 <- function(Data, fontsize = 11, scale = 3, ncol = 3, labels, title = "
           # geom_vline(xintercept = Inf, linetype = 1, size = 0.25, colour = "black") +
           geom_point(pch = 21, size = 3, fill = "transparent", alpha = 1) +
           geom_point(pch = 21, size = 3, alpha = 0.7) +
-          scale_fill_manual(values = c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4")) +
-          scale_colour_manual(values = c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4"), guide = "none") +
+          # scale_fill_manual(values = c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4", "#C3A0C4", "#C7CED1")) +
+          # scale_colour_manual(values = c("#86BADE", "#D86C58", "#49BB6C", "#C3A0C4", "#E3DB4A", "#C4758E", "#77B1A4", "#C3A0C4", "#C7CED1"), guide = "none") +
+          scale_fill_manual(values = colour) +
+          scale_colour_manual(values = colour, guide = "none") +
           theme(legend.position = "top",
                 legend.key.size = unit(0.8, "lines"),
                 legend.text = element_text(size = fontsize, face = "italic"),
-                legend.margin = unit(0.5, "cm"),
                 legend.background = element_rect(colour = "grey15", fill = "transparent", size = 0.25),
                 axis.ticks.length = unit(0, "lines"),
-                plot.margin = unit(c(0, 3, 1, plot.margin.left), "lines")) +
+                plot.margin = unit(c(plot.margin.top, 3, 0, plot.margin.left), "lines"),
+                plot.title = element_text(vjust = plot.title.vjust)) +
           guides 
-        )
+        
 }
+
+
 

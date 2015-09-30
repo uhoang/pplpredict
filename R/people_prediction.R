@@ -72,6 +72,25 @@ RCIMeasure <- function(x, partyNames = NULL) {
   list(rci = rci, rciWinner2ndRunner = as.numeric(rci[winnerIdx]), winner = partyNames[winnerIdx])
 }
 
+RCIMatrix <- function(Data, rci.vars, partyNames = NULL, transform = FALSE, ...) {
+  if (!is.data.frame(Data)) stop("Data has a wrong format. It must be a data.frame.")
+  Rate <- Data[ , rci.vars]
+  args <- match.call()
+
+  if (transform) { 
+    if (!"domain" %in% names(args)) domain = c(0, 10)
+    if (!"range" %in% names(args)) range = c(0, 1)
+    if (!"bounded" %in% names(args)) bounded = TRUE
+    if (!"na.replace" %in% names(args)) na.replace = 0
+    Rate <- data.frame(apply(Rate, 2, rescaleWrapper, domain = domain, range = range, bounded = bounded, na.replace = na.replace))
+  }
+  RCI <- apply(Rate, 1, function(x) RCIMeasure(x, partyNames))
+  RCI <- data.frame(do.call(rbind, lapply(RCI, unlist)), stringsAsFactors = FALSE)    
+  RCI[ , -ncol(RCI)] <- apply(RCI[ , -ncol(RCI)], 2, as.numeric)       
+  
+  RCI
+
+}
 
 
 #' Calulate a people Prediction at electorate levels using relative confidence index 
@@ -86,36 +105,51 @@ RCIMeasure <- function(x, partyNames = NULL) {
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor", "Greens", "LibNat", "Katter"))
 #' peoplePrediction(Queensland, paste0("party", 1:4, "B"), partyNames = c("Labor ","Greens" ,"LibNat", "Katter"), transform = TRUE)
 #' peoplePrediction(Queensland, paste0("party", 1:3, "B"), partyNames = c("Labor", "Greens", "LibNat"))
-peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = FALSE, ...) {
 
-  if (!is.data.frame(Data)) stop("Data has a wrong format. It must be a data.frame.")
-  Rate <- Data[ , rci.vars]
-  args <- match.call()
+peoplePrediction <- function(Data, rci.vars, partyNames = NULL, transform = FALSE, ridingVar = c("riding", "electorate", "district"), ...) {
 
-  if (transform) { 
-    if (!"domain" %in% names(args)) domain = c(0, 10)
-    if (!"range" %in% names(args)) range = c(0, 1)
-    if (!"bounded" %in% names(args)) bounded = TRUE
-    if (!"na.replace" %in% names(args)) na.replace = 0
-    Rate <- data.frame(apply(Rate, 2, rescaleWrapper, domain = domain, range = range, bounded = bounded, na.replace = na.replace))
+  # if (!is.data.frame(Data)) stop("The data has a wrong format. It must be a data.frame.")
+  # Rate <- Data[ , rci.vars]
+  # args <- match.call()
+
+  # if (transform) { 
+  #   if (!"domain" %in% names(args)) domain = c(0, 10)
+  #   if (!"range" %in% names(args)) range = c(0, 1)
+  #   if (!"bounded" %in% names(args)) bounded = TRUE
+  #   if (!"na.replace" %in% names(args)) na.replace = 0
+  #   Rate <- data.frame(apply(Rate, 2, rescaleWrapper, domain = domain, range = range, bounded = bounded, na.replace = na.replace))
+  # }
+
+  # RCI <- apply(Rate, 1, function(x) RCIMeasure(x, partyNames))
+  # RCI <- data.frame(do.call(rbind, lapply(RCI, unlist)), stringsAsFactors = FALSE)    
+  # RCI[ , -ncol(RCI)] <- apply(RCI[ , -ncol(RCI)], 2, as.numeric)    
+  RCI <- RCIMatrix(Data = Data, rci.vars = rci.vars, partyNames = partyNames, transform = transform, ...)
+
+  if (!("weight" %in% names(Data))) { 
+    warnings("The weight is set to 1.")
+    Data$weight <- 1    
+
   }
+  if (all(! ridingVar %in% names(Data))) {
+    stop("The data has no riding/ electorate variables.")
+  } else {
+    ridingVar <- ridingVar[ridingVar %in% names(Data)][1]
+  } 
 
-  RCI <- apply(Rate, 1, function(x) RCIMeasure(x, partyNames))
-  RCI <- data.frame(do.call(rbind, lapply(RCI, unlist)), stringsAsFactors = FALSE)    
-  RCI[ , -ncol(RCI)] <- apply(RCI[ , -ncol(RCI)], 2, as.numeric)    
-  
-  if (!("weight" %in% names(Data))) Data$weight <- 1    
-  
-  rciWinner2ndRunner <- vplTable(RCI$rciWinner2ndRunner, Data$electorate, Data$weight)    
+  rciWinner2ndRunner <- vplTable(RCI$rciWinner2ndRunner, Data[ , ridingVar], Data$weight)    
   
   rciParties <- grep("rci\\.", names(RCI), value = TRUE)
-  rciPredict <- vplTable(RCI[ , rciParties], Data$electorate, Data$weight)
+  rciPredict <- vplTable(RCI[ , rciParties], Data[ , ridingVar], Data$weight)
   rciPredict <- reshape(rciPredict[ , -ncol(rciPredict)], v.names = "value", timevar = "category1", idvar = "group1", direction = "wide")    
   
-  rciPredict$winner <- partyNames[apply(rciPredict[ , grep("value", names(rciPredict), value = TRUE)], 1, maxWrapper)]
+  winnerIdx <- apply(rciPredict[ , grep("value", names(rciPredict), value = TRUE)], 1, maxWrapper)
+  rciPredict$winner <- partyNames[winnerIdx]
   rciPredict$secondPlace <- partyNames[apply(rciPredict[ ,grep("value", names(rciPredict), value = TRUE)], 1, function(x) which(x == sort(x, decreasing = TRUE)[2]))]    
-  
-  names(rciPredict)[1:(length(rciPredict)-2)] <- c("electorate", gsub("value\\.", "", rciParties))
+  names(rciPredict)[1:(length(rciPredict)-2)] <- c(ridingVar, gsub("value\\.", "", rciParties))
+  winnerRCI <- plyr::ddply(rciPredict, plyr::as.quoted(ridingVar), function(D) D[,paste0("rci.", D$winner)])[,2]
+  secondRunnerRCI <- plyr::ddply(rciPredict, plyr::as.quoted(ridingVar), function(D) D[,paste0("rci.", D$secondPlace)])[,2]
+  rciPredict$certainty <- winnerRCI - secondRunnerRCI
+  rciPredict$normalizedCertainty <- (rciPredict$certainty - min(rciPredict$certainty))/(max(rciPredict$certainty) - min(rciPredict$certainty)) 
   rciPredict
 }
 

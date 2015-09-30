@@ -106,6 +106,7 @@ recategorize <- function(x, x.new, labels = NA) {
 #'				  "polInterestRaw", "polConsumptionRaw", "religionRaw", "selfPlacementRaw", "birthplaceRaw", 
 #'				  "incomeRaw", "voteChoiceRaw", "voteChoiceLeaningRaw")
 #' cleanData(QueenslandRaw, varsClean, "QueenslandMatch.xlsx") 
+
 cleanData <- function (Data, varsClean, matchFileName, labels = NULL, trailingSpace = TRUE, na.strings = NULL, ...) {
     if (!basename(matchFileName) %in% list.files(dirname(matchFileName))) {
         stop(paste0(matchFileName, " does not exist."))
@@ -191,7 +192,11 @@ cleanData <- function (Data, varsClean, matchFileName, labels = NULL, trailingSp
 #' makeIndicator(Queensland[,"previousVoteRaw"], c("Liberal","Greens","Katter","Labor"))
 makeIndicator <- function(x, levels) {
 
-	Data <- data.frame(apply(matrix(levels, nrow = 1, byrow = TRUE), 2, function(l) as.numeric(grepl(l, x, ignore.case = TRUE))))
+	Data <- data.frame(apply(matrix(levels, nrow = 1, byrow = TRUE), 2, function(l) { 
+        vec <- as.numeric(grepl(l, x, ignore.case = TRUE))
+        vec[is.na(x)] <- NA
+        return(vec)
+    }))
 	names(Data) <- levels
 	Data
 }
