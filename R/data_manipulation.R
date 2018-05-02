@@ -158,7 +158,7 @@ cleanData <- function (Data, varsClean, matchFileName, labels = NULL, trailingSp
         if (!grep("\\.xlsx", matchFileName, ignore.case = TRUE)) 
             stop("The matchFileName must have a xlsx extension.")
         if (any(varsClean == "varNames")) {
-            matchFile <- xlsx::read.xlsx(matchFileName, sheetName = "varNames", 
+            matchFile <-openxlsx::read.xlsx(matchFileName, sheetName = "varNames", 
                 stringsAsFactors = FALSE, header = FALSE)
             if (any(!matchFile[,1] %in% names(Data))) {
             	msg <- paste0("There are no variables: ", paste0(matchFile[,1][!matchFile[,1] %in% names(Data)], collapse = ", "), 
@@ -176,7 +176,7 @@ cleanData <- function (Data, varsClean, matchFileName, labels = NULL, trailingSp
         if ( length(varsClean) > 0 ) {
             for (i in 1:length(varsClean)) {
             cat("Cleaning", varsClean[i], "\n")
-            matchFile <- xlsx::read.xlsx(matchFileName, sheetName = varsClean[i], 
+            matchFile <- openlsx::read.xlsx(matchFileName, sheetName = varsClean[i], 
                 stringsAsFactors = FALSE, header = FALSE)
             if (is.null(matchFile)) stop(paste0("The sheet ", varsClean[i], " in the matchFileName is empty."))
             matchFile <- matchFile[!duplicated(matchFile[, 1]), ]
