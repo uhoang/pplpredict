@@ -9,5 +9,5 @@ LazyData: true
 Imports: plyr,
     survey,
     reshape2,
-    xlsx
+    openxlsx
 Suggests: knitr
